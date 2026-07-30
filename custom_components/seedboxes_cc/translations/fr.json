@@ -3,11 +3,17 @@
     "step": {
       "user": {
         "title": "Connexion à Seedboxes.cc",
-        "description": "Saisissez les identifiants de votre compte Seedboxes.cc et l’identifiant de la seedbox. L’intégration se connecte automatiquement sans demander de cookie navigateur.",
+        "description": "Saisissez les identifiants de votre compte Seedboxes.cc. L’intégration se connecte et découvre automatiquement votre seedbox.",
         "data": {
-          "seedbox_id": "Identifiant de la seedbox",
           "username": "Adresse e-mail ou nom d’utilisateur",
           "password": "Mot de passe"
+        }
+      },
+      "select_seedbox": {
+        "title": "Choisir une seedbox",
+        "description": "Plusieurs seedboxes ont été trouvées sur ce compte. Sélectionnez celle à ajouter.",
+        "data": {
+          "seedbox_id": "Seedbox"
         }
       },
       "reauth_confirm": {
@@ -21,11 +27,12 @@
     },
     "error": {
       "invalid_auth": "Les identifiants sont invalides ou ce compte n’a pas accès à la seedbox demandée.",
-      "cannot_connect": "Impossible de se connecter à Seedboxes.cc ou de terminer la procédure de connexion.",
+      "cannot_connect": "Impossible de se connecter à Seedboxes.cc, de découvrir une seedbox ou de terminer la procédure de connexion.",
       "unknown": "Erreur inattendue. Consultez les journaux de Home Assistant."
     },
     "abort": {
       "already_configured": "Cette seedbox est déjà configurée.",
+      "discovery_failed": "La session de découverte a expiré. Recommencez l’ajout de l’intégration.",
       "reauth_successful": "Les identifiants du compte Seedboxes.cc ont été mis à jour.",
       "reauth_failed": "Impossible de retrouver l’entrée d’intégration à réauthentifier."
     }
@@ -46,7 +53,7 @@
       "disk_free": { "name": "Espace disque libre" },
       "disk_used": { "name": "Espace disque utilisé" },
       "disk_used_percent": { "name": "Occupation du disque" },
-      "monthly_traffic": { "name": "Trafic mensuel" },
+      "monthly_traffic": { "name": "Quota de trafic mensuel" },
       "disk_size": { "name": "Capacité du disque" },
       "ip_address": { "name": "Adresse IP" },
       "torrent_client": { "name": "Client torrent" }
