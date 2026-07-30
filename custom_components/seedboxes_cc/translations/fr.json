@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connexion à Seedboxes.cc",
+        "description": "Saisissez l’identifiant de la seedbox et la valeur du cookie session_id provenant d’une session Seedboxes.cc authentifiée dans votre navigateur.",
+        "data": {
+          "seedbox_id": "Identifiant de la seedbox",
+          "session_cookie": "Cookie de session"
+        }
+      }
+    },
+    "error": {
+      "auth": "Le cookie de session est invalide, expiré ou ne donne pas accès à cette seedbox.",
+      "cannot_connect": "Impossible de se connecter à Seedboxes.cc.",
+      "unknown": "Erreur inattendue. Consultez les journaux de Home Assistant."
+    },
+    "abort": {
+      "already_configured": "Cette seedbox est déjà configurée."
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Options Seedboxes.cc",
+        "data": {
+          "scan_period": "Intervalle de mise à jour (secondes)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": { "name": "Statut" },
+      "disk_free": { "name": "Espace disque libre" },
+      "disk_used": { "name": "Espace disque utilisé" },
+      "disk_used_percent": { "name": "Occupation du disque" },
+      "monthly_traffic": { "name": "Trafic mensuel" },
+      "disk_size": { "name": "Capacité du disque" },
+      "ip_address": { "name": "Adresse IP" },
+      "torrent_client": { "name": "Client torrent" }
+    }
+  }
+}
