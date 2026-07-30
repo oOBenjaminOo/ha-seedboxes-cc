@@ -1,7 +1,4 @@
 {
-    "name": "Seedboxes.cc",
-    "domains": [
-        "sensor"
-    ],
-    "iot_class": "Cloud Polling"
+  "homeassistant": "2026.7.0",
+  "name": "Seedboxes.cc"
 }
