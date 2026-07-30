@@ -1,23 +1,52 @@
 {
-    "config": {
-        "step": {
-            "user": {
-                "title": "Configuration",
-                "description": "Please [enable API access](https://seedboxes.cc/client/settings) and paste your Seedboxes.cc API key below.",
-                "data": {
-                    "api_key": "Seedboxes.cc API Key"
-                }
-            }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Seedboxes.cc",
+        "description": "Enter the seedbox ID and the value of the session_id cookie from an authenticated Seedboxes.cc browser session.",
+        "data": {
+          "seedbox_id": "Seedbox ID",
+          "session_cookie": "Session cookie"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect to Seedboxes.cc",
+        "description": "The Seedboxes.cc session has expired. Enter a new session_id cookie.",
+        "data": {
+          "session_cookie": "New session cookie"
+        }
+      }
     },
-    "options": {
-        "step": {
-            "user": {
-                "data": {
-                    "scan_period": "Scan Period (s)",
-                    "sensor": "Enable Sensors"
-                }
-            }
-        }
+    "error": {
+      "auth": "The session cookie is invalid, expired, or does not have access to this seedbox.",
+      "cannot_connect": "Unable to connect to Seedboxes.cc.",
+      "unknown": "Unexpected error. Check the Home Assistant logs."
+    },
+    "abort": {
+      "already_configured": "This seedbox is already configured.",
+      "reauth_successful": "The Seedboxes.cc session has been updated successfully."
     }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Seedboxes.cc options",
+        "data": {
+          "scan_period": "Update interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": { "name": "Status" },
+      "disk_free": { "name": "Free disk space" },
+      "disk_used": { "name": "Used disk space" },
+      "disk_used_percent": { "name": "Disk usage" },
+      "monthly_traffic": { "name": "Monthly traffic" },
+      "disk_size": { "name": "Disk capacity" },
+      "ip_address": { "name": "IP address" },
+      "torrent_client": { "name": "Torrent client" }
+    }
+  }
 }
