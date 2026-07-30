@@ -3,11 +3,17 @@
     "step": {
       "user": {
         "title": "Connect to Seedboxes.cc",
-        "description": "Enter your Seedboxes.cc account credentials and seedbox ID. The integration signs in automatically and does not require a browser cookie.",
+        "description": "Enter your Seedboxes.cc account credentials. The integration signs in and discovers your seedbox automatically.",
         "data": {
-          "seedbox_id": "Seedbox ID",
           "username": "Email address or username",
           "password": "Password"
+        }
+      },
+      "select_seedbox": {
+        "title": "Choose a seedbox",
+        "description": "Several seedboxes were found on this account. Select the one to add.",
+        "data": {
+          "seedbox_id": "Seedbox"
         }
       },
       "reauth_confirm": {
@@ -21,11 +27,12 @@
     },
     "error": {
       "invalid_auth": "The account credentials are invalid or this account cannot access the requested seedbox.",
-      "cannot_connect": "Unable to connect to Seedboxes.cc or complete its login flow.",
+      "cannot_connect": "Unable to connect to Seedboxes.cc, discover a seedbox, or complete its login flow.",
       "unknown": "Unexpected error. Check the Home Assistant logs."
     },
     "abort": {
       "already_configured": "This seedbox is already configured.",
+      "discovery_failed": "The seedbox discovery session expired. Start the setup again.",
       "reauth_successful": "The Seedboxes.cc account credentials have been updated.",
       "reauth_failed": "Unable to find the integration entry to reauthenticate."
     }
@@ -46,7 +53,7 @@
       "disk_free": { "name": "Free disk space" },
       "disk_used": { "name": "Used disk space" },
       "disk_used_percent": { "name": "Disk usage" },
-      "monthly_traffic": { "name": "Monthly traffic" },
+      "monthly_traffic": { "name": "Monthly traffic allowance" },
       "disk_size": { "name": "Disk capacity" },
       "ip_address": { "name": "IP address" },
       "torrent_client": { "name": "Torrent client" }
