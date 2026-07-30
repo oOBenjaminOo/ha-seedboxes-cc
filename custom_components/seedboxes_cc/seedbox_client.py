@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from html import unescape
 from html.parser import HTMLParser
-import re
+import json
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
@@ -25,6 +25,7 @@ from .const import (
 
 BASE_URL = "https://www.seedboxes.cc"
 LOGIN_URL = f"{BASE_URL}/api/auth/login"
+TELEMETRY_URL = f"{BASE_URL}/api/telemetry/stream-all"
 GATEKEEPER_HOST = "gatekeeper.seedboxes.cc"
 USER_AGENT = "HomeAssistant Seedboxes.cc Integration/2.0"
 
@@ -34,11 +35,11 @@ class SeedboxAuthenticationError(Exception):
 
 
 class SeedboxDataError(Exception):
-    """Raised when dashboard data cannot be parsed."""
+    """Raised when Seedboxes.cc data cannot be retrieved."""
 
 
 class _LoginFormParser(HTMLParser):
-    """Extract the Keycloak login form and its default fields."""
+    """Extract the Keycloak login form and its fields."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -57,43 +58,36 @@ class _LoginFormParser(HTMLParser):
             self._candidate_fields = {}
             self._candidate_has_password = False
             return
-
         if tag != "input" or not self._inside_form:
             return
-
         name = attributes.get("name")
         if not name:
             return
-
-        input_type = (attributes.get("type") or "text").lower()
-        if input_type == "password":
+        if (attributes.get("type") or "text").lower() == "password":
             self._candidate_has_password = True
-
         self._candidate_fields[name] = attributes.get("value") or ""
 
     def handle_endtag(self, tag: str) -> None:
         if tag != "form" or not self._inside_form:
             return
-
         if self.action is None and self._candidate_has_password:
             self.action = self._candidate_action
             self.fields = self._candidate_fields
-
         self._inside_form = False
 
 
 class SeedboxClient:
-    """Authenticate and retrieve information from the Seedboxes.cc dashboard."""
+    """Authenticate and retrieve Seedboxes.cc information."""
 
     def __init__(
         self,
         session: aiohttp.ClientSession,
-        seedbox_id: str,
+        seedbox_id: str | None,
         username: str,
         password: str,
     ) -> None:
         self._session = session
-        self._seedbox_id = str(seedbox_id)
+        self._seedbox_id = str(seedbox_id) if seedbox_id is not None else None
         self._username = username.strip()
         self._password = password
         self._session_cookie: str | None = None
@@ -102,80 +96,74 @@ class SeedboxClient:
     async def async_validate_credentials(self) -> None:
         """Authenticate and verify access to the configured seedbox."""
         await self._async_login(force=True)
-        await self.async_get_data()
+        if self._seedbox_id is not None:
+            await self._async_fetch_seedbox(self._seedbox_id)
+
+    async def async_discover_seedboxes(self) -> dict[str, dict[str, Any]]:
+        """Discover all seedboxes exposed by the authenticated telemetry stream."""
+        await self._async_login(force=True)
+        ids = await self._async_read_telemetry_ids()
+        if not ids:
+            raise SeedboxDataError("No seedbox was discovered for this account")
+        result: dict[str, dict[str, Any]] = {}
+        for seedbox_id in sorted(ids):
+            result[seedbox_id] = await self._async_fetch_seedbox(seedbox_id)
+        return result
 
     async def async_get_data(self) -> dict[str, Any]:
-        """Fetch and parse the Seedboxes.cc dashboard."""
+        """Fetch structured seedbox data from the JSON API and telemetry stream."""
+        if self._seedbox_id is None:
+            raise SeedboxDataError("No seedbox is selected")
         if self._session_cookie is None:
             await self._async_login()
-
         try:
-            html = await self._async_fetch_dashboard()
+            details = await self._async_fetch_seedbox(self._seedbox_id)
+            telemetry = await self._async_read_telemetry_sample(self._seedbox_id)
         except SeedboxAuthenticationError:
             await self._async_login(force=True)
-            html = await self._async_fetch_dashboard()
+            details = await self._async_fetch_seedbox(self._seedbox_id)
+            telemetry = await self._async_read_telemetry_sample(self._seedbox_id)
 
-        if f'"seedboxId":"{self._seedbox_id}"' not in html:
-            raise SeedboxAuthenticationError(
-                "The requested seedbox is not available for this account"
-            )
+        disk_size = float(details.get("disk_space") or 0)
+        disk_used = round(float(telemetry.get("disk_used_bytes", 0)) / 1_000_000_000, 2)
+        disk_free = round(max(disk_size - disk_used, 0), 2)
+        disk_used_pct = round((disk_used / disk_size) * 100, 2) if disk_size else 0
+        server = details.get("server") or {}
+        product = details.get("product") or {}
 
-        disk_size = float(self._extract_number(html, "diskSpaceLimit"))
-        traffic_raw = float(self._extract_number(html, "currentMonthTraffic"))
-        metrics = re.findall(r'\\"diskspace\\":(\d+),\\"traffic\\":(\d+)', html)
-        if not metrics:
-            raise SeedboxDataError("No telemetry metrics found in dashboard page")
-
-        disk_used_mb = float(metrics[-1][0])
-        disk_used_gb = round(disk_used_mb / 1000, 2)
-        disk_free_gb = round(max(disk_size - disk_used_gb, 0), 2)
-        disk_used_pct = round((disk_used_gb / disk_size) * 100, 2) if disk_size else 0
-
-        return {
-            "data": {
-                NAME_DISK_QUOTA_FREE: disk_free_gb,
-                NAME_DISK_QUOTA_USED: disk_used_gb,
-                NAME_DISK_QUOTA_USED_PCT: disk_used_pct,
-                NAME_MONTHLY_TRAFFIC: round(traffic_raw / 1024, 2),
-                NAME_DISK_SIZE: disk_size,
-                NAME_IP_ADDRESS: self._extract_table_value(html, "Server IP"),
-                NAME_TORRENT_CLIENT: self._extract_optional_table_value(
-                    html, "Torrent Client"
-                ),
-                NAME_STATUS: self._extract_table_value(html, "Status"),
-            }
-        }
+        return {"data": {
+            NAME_DISK_QUOTA_FREE: disk_free,
+            NAME_DISK_QUOTA_USED: disk_used,
+            NAME_DISK_QUOTA_USED_PCT: disk_used_pct,
+            NAME_MONTHLY_TRAFFIC: float(details.get("monthly_traffic") or 0) * 1000,
+            NAME_DISK_SIZE: disk_size,
+            NAME_IP_ADDRESS: server.get("ip"),
+            NAME_TORRENT_CLIENT: details.get("torrent_client"),
+            NAME_STATUS: product.get("status") or telemetry.get("status") or "Unknown",
+        }}
 
     async def _async_login(self, force: bool = False) -> None:
-        """Create an authenticated Seedboxes.cc dashboard session."""
+        """Create an authenticated Seedboxes.cc session."""
         async with self._login_lock:
             if self._session_cookie is not None and not force:
                 return
-
             timeout = aiohttp.ClientTimeout(total=45)
             cookie_jar = aiohttp.CookieJar()
-            headers = {"User-Agent": USER_AGENT}
-
             async with aiohttp.ClientSession(
                 timeout=timeout,
                 cookie_jar=cookie_jar,
-                headers=headers,
+                headers={"User-Agent": USER_AGENT},
             ) as login_session:
                 async with login_session.get(LOGIN_URL, allow_redirects=True) as response:
                     if response.status != 200:
-                        raise SeedboxDataError(
-                            f"Login page returned HTTP {response.status}"
-                        )
+                        raise SeedboxDataError(f"Login page returned HTTP {response.status}")
                     login_page = await response.text()
                     login_page_url = str(response.url)
 
                 parser = _LoginFormParser()
                 parser.feed(login_page)
                 if not parser.action:
-                    raise SeedboxDataError(
-                        "Unable to find the Seedboxes.cc authentication form"
-                    )
-
+                    raise SeedboxDataError("Unable to find the authentication form")
                 authentication_url = urljoin(login_page_url, unescape(parser.action))
                 parsed_url = urlparse(authentication_url)
                 if (
@@ -186,14 +174,10 @@ class SeedboxClient:
                     raise SeedboxDataError("Unexpected authentication endpoint")
 
                 form_data = dict(parser.fields)
-                form_data["username"] = self._username
-                form_data["password"] = self._password
+                form_data.update({"username": self._username, "password": self._password})
                 form_data.setdefault("credentialId", "")
-
                 async with login_session.post(
-                    authentication_url,
-                    data=form_data,
-                    allow_redirects=True,
+                    authentication_url, data=form_data, allow_redirects=True
                 ) as response:
                     final_url = str(response.url)
                     response_text = await response.text()
@@ -205,55 +189,96 @@ class SeedboxClient:
                 session_cookie = cookie_jar.filter_cookies(URL(BASE_URL)).get("session_id")
                 if session_cookie is None:
                     if "login-actions/authenticate" in final_url or "kc-form-login" in response_text:
-                        raise SeedboxAuthenticationError(
-                            "Invalid Seedboxes.cc username or password"
-                        )
-                    raise SeedboxDataError(
-                        "Seedboxes.cc did not create an authenticated session"
-                    )
-
+                        raise SeedboxAuthenticationError("Invalid username or password")
+                    raise SeedboxDataError("Seedboxes.cc did not create a session")
                 self._session_cookie = session_cookie.value
 
-    async def _async_fetch_dashboard(self) -> str:
-        """Fetch the dashboard using the current authenticated session."""
-        url = f"{BASE_URL}/dashboard/seedboxes/{self._seedbox_id}"
-        headers = {
+    def _headers(self) -> dict[str, str]:
+        return {
             "Cookie": f"session_id={self._session_cookie}",
             "User-Agent": USER_AGENT,
+            "Accept": "application/json",
         }
 
-        async with self._session.get(url, headers=headers, allow_redirects=False) as response:
+    async def _async_fetch_seedbox(self, seedbox_id: str) -> dict[str, Any]:
+        """Fetch one seedbox from the JSON endpoint."""
+        url = f"{BASE_URL}/api/seedbox/{seedbox_id}"
+        async with self._session.get(url, headers=self._headers(), allow_redirects=False) as response:
             if response.status in (301, 302, 303, 307, 308, 401, 403):
                 self._session_cookie = None
                 raise SeedboxAuthenticationError("Session is invalid or expired")
+            if response.status == 404:
+                raise SeedboxAuthenticationError("Seedbox is not available for this account")
             if response.status != 200:
-                raise SeedboxDataError(f"Dashboard returned HTTP {response.status}")
-            return await response.text()
+                raise SeedboxDataError(f"Seedbox API returned HTTP {response.status}")
+            payload = await response.json(content_type=None)
+        if not payload.get("success") or not isinstance(payload.get("data"), dict):
+            raise SeedboxDataError("Seedbox API returned an invalid response")
+        return payload["data"]
+
+    async def _async_read_telemetry_ids(self) -> set[str]:
+        """Read seedbox identifiers from the SSE stream."""
+        ids: set[str] = set()
+        expected: int | None = None
+        async with asyncio.timeout(20):
+            async with self._session.get(
+                TELEMETRY_URL,
+                headers={**self._headers(), "Accept": "text/event-stream"},
+                allow_redirects=False,
+            ) as response:
+                self._check_stream_response(response)
+                async for raw_line in response.content:
+                    event = self._parse_sse_line(raw_line)
+                    if event is None:
+                        continue
+                    if event.get("type") == "connected":
+                        expected = int(event.get("seedboxCount") or 0)
+                    if event.get("seedboxId") is not None:
+                        ids.add(str(event["seedboxId"]))
+                    if expected is not None and expected > 0 and len(ids) >= expected:
+                        break
+        return ids
+
+    async def _async_read_telemetry_sample(self, seedbox_id: str) -> dict[str, Any]:
+        """Read a current disk-space sample for one seedbox."""
+        result: dict[str, Any] = {}
+        async with asyncio.timeout(20):
+            async with self._session.get(
+                TELEMETRY_URL,
+                headers={**self._headers(), "Accept": "text/event-stream"},
+                allow_redirects=False,
+            ) as response:
+                self._check_stream_response(response)
+                async for raw_line in response.content:
+                    event = self._parse_sse_line(raw_line)
+                    if event is None or str(event.get("seedboxId", "")) != seedbox_id:
+                        continue
+                    result["status"] = event.get("status")
+                    data = event.get("data") or {}
+                    if data.get("type") == "diskspace" and data.get("metric") == "used":
+                        result["disk_used_bytes"] = float(data.get("value") or 0)
+                        break
+        if "disk_used_bytes" not in result:
+            raise SeedboxDataError("No disk-space telemetry was received")
+        return result
+
+    def _check_stream_response(self, response: aiohttp.ClientResponse) -> None:
+        if response.status in (301, 302, 303, 307, 308, 401, 403):
+            self._session_cookie = None
+            raise SeedboxAuthenticationError("Session is invalid or expired")
+        if response.status != 200:
+            raise SeedboxDataError(f"Telemetry stream returned HTTP {response.status}")
 
     @staticmethod
-    def _extract_number(html: str, key: str) -> str:
-        match = re.search(rf'\\"{re.escape(key)}\\":(\d+(?:\.\d+)?)', html)
-        if not match:
-            raise SeedboxDataError(f"Missing dashboard value: {key}")
-        return match.group(1)
-
-    @staticmethod
-    def _extract_table_value(html: str, label: str) -> str:
-        pattern = (
-            rf'\\"children\\":\\"{re.escape(label)}\\"'
-            rf'.{{0,1400}}?\\"children\\":\\"([^\\"]+)\\"'
-        )
-        match = re.search(pattern, html)
-        if not match:
-            raise SeedboxDataError(f"Missing dashboard field: {label}")
-        return match.group(1)
-
-    @classmethod
-    def _extract_optional_table_value(cls, html: str, label: str) -> str | None:
-        try:
-            return cls._extract_table_value(html, label)
-        except SeedboxDataError:
+    def _parse_sse_line(raw_line: bytes) -> dict[str, Any] | None:
+        line = raw_line.decode(errors="replace").strip()
+        if not line.startswith("data:"):
             return None
+        try:
+            payload = json.loads(line[5:].strip())
+        except json.JSONDecodeError:
+            return None
+        return payload if isinstance(payload, dict) else None
 
 
 seedbox_client = SeedboxClient
