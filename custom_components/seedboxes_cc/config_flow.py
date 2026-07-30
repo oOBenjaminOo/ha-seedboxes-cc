@@ -25,21 +25,30 @@ from .seedbox_client import SeedboxAuthenticationError, SeedboxClient, SeedboxDa
 class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Seedboxes.cc."""
 
-    VERSION = 3
+    VERSION = 4
+
+    def __init__(self) -> None:
+        self._username: str | None = None
+        self._password: str | None = None
+        self._discovered: dict[str, dict[str, Any]] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.ConfigFlowResult:
-        """Handle the initial configuration step."""
+        """Authenticate and discover the account seedboxes."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            seedbox_id = str(user_input[CONF_SEEDBOX_ID]).strip()
-            username = str(user_input[CONF_USERNAME]).strip()
-            password = str(user_input[CONF_PASSWORD])
-
+            self._username = str(user_input[CONF_USERNAME]).strip()
+            self._password = str(user_input[CONF_PASSWORD])
             try:
-                await self._async_validate(seedbox_id, username, password)
+                client = SeedboxClient(
+                    async_get_clientsession(self.hass),
+                    None,
+                    self._username,
+                    self._password,
+                )
+                self._discovered = await client.async_discover_seedboxes()
             except SeedboxAuthenticationError:
                 errors["base"] = "invalid_auth"
             except (SeedboxDataError, TimeoutError):
@@ -47,27 +56,69 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             except Exception:  # noqa: BLE001
                 errors["base"] = "unknown"
             else:
-                await self.async_set_unique_id(seedbox_id)
-                self._abort_if_unique_id_configured()
-                return self.async_create_entry(
-                    title=f"Seedbox {seedbox_id}",
-                    data={
-                        CONF_SEEDBOX_ID: seedbox_id,
-                        CONF_USERNAME: username,
-                        CONF_PASSWORD: password,
-                    },
-                )
+                if len(self._discovered) == 1:
+                    seedbox_id = next(iter(self._discovered))
+                    return await self._async_create_seedbox_entry(seedbox_id)
+                return await self.async_step_select_seedbox()
 
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_SEEDBOX_ID): str,
                     vol.Required(CONF_USERNAME): str,
                     vol.Required(CONF_PASSWORD): str,
                 }
             ),
             errors=errors,
+        )
+
+    async def async_step_select_seedbox(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        """Let the user select one seedbox when several are available."""
+        if not self._discovered or self._username is None or self._password is None:
+            return self.async_abort(reason="discovery_failed")
+
+        if user_input is not None:
+            return await self._async_create_seedbox_entry(
+                str(user_input[CONF_SEEDBOX_ID])
+            )
+
+        choices: dict[str, str] = {}
+        for seedbox_id, details in self._discovered.items():
+            server = details.get("server") or {}
+            package = details.get("package") or {}
+            username = details.get("username") or f"Seedbox {seedbox_id}"
+            label_parts = [str(username)]
+            if server.get("name"):
+                label_parts.append(str(server["name"]))
+            if package.get("name"):
+                label_parts.append(str(package["name"]))
+            choices[seedbox_id] = " — ".join(label_parts)
+
+        return self.async_show_form(
+            step_id="select_seedbox",
+            data_schema=vol.Schema(
+                {vol.Required(CONF_SEEDBOX_ID): vol.In(choices)}
+            ),
+        )
+
+    async def _async_create_seedbox_entry(
+        self, seedbox_id: str
+    ) -> config_entries.ConfigFlowResult:
+        """Create an entry for the selected seedbox."""
+        await self.async_set_unique_id(seedbox_id)
+        self._abort_if_unique_id_configured()
+        details = self._discovered.get(seedbox_id, {})
+        server = details.get("server") or {}
+        title = details.get("username") or server.get("name") or f"Seedbox {seedbox_id}"
+        return self.async_create_entry(
+            title=str(title),
+            data={
+                CONF_SEEDBOX_ID: seedbox_id,
+                CONF_USERNAME: self._username,
+                CONF_PASSWORD: self._password,
+            },
         )
 
     async def async_step_reauth(
@@ -84,7 +135,6 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> config_entries.ConfigFlowResult:
         """Validate and save replacement account credentials."""
         errors: dict[str, str] = {}
-
         if self._reauth_entry is None:
             return self.async_abort(reason="reauth_failed")
 
@@ -94,9 +144,14 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             username = str(user_input[CONF_USERNAME]).strip()
             password = str(user_input[CONF_PASSWORD])
-
             try:
-                await self._async_validate(seedbox_id, username, password)
+                client = SeedboxClient(
+                    async_get_clientsession(self.hass),
+                    seedbox_id,
+                    username,
+                    password,
+                )
+                await client.async_validate_credentials()
             except SeedboxAuthenticationError:
                 errors["base"] = "invalid_auth"
             except (SeedboxDataError, TimeoutError):
@@ -104,15 +159,13 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             except Exception:  # noqa: BLE001
                 errors["base"] = "unknown"
             else:
-                new_data = {
-                    **self._reauth_entry.data,
-                    CONF_USERNAME: username,
-                    CONF_PASSWORD: password,
-                }
-                new_data.pop("session_cookie", None)
                 self.hass.config_entries.async_update_entry(
                     self._reauth_entry,
-                    data=new_data,
+                    data={
+                        **self._reauth_entry.data,
+                        CONF_USERNAME: username,
+                        CONF_PASSWORD: password,
+                    },
                     version=self.VERSION,
                 )
                 await self.hass.config_entries.async_reload(
@@ -131,18 +184,6 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders={"seedbox_id": seedbox_id},
         )
-
-    async def _async_validate(
-        self, seedbox_id: str, username: str, password: str
-    ) -> None:
-        """Validate account credentials and seedbox access."""
-        client = SeedboxClient(
-            async_get_clientsession(self.hass),
-            seedbox_id,
-            username,
-            password,
-        )
-        await client.async_validate_credentials()
 
     @staticmethod
     @callback
@@ -176,10 +217,8 @@ class SeedboxOptionsFlowHandler(config_entries.OptionsFlow):
                 default=self.options.get(CONF_SCAN_PERIOD, DEFAULT_SCAN_PERIOD),
             )
         ] = int
-
         for platform in sorted(PLATFORMS, key=str):
             data_schema[
                 vol.Required(platform, default=self.options.get(platform, True))
             ] = bool
-
         return self.async_show_form(step_id="user", data_schema=vol.Schema(data_schema))
