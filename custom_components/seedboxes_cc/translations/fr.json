@@ -8,15 +8,24 @@
           "seedbox_id": "Identifiant de la seedbox",
           "session_cookie": "Cookie de session"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reconnecter Seedboxes.cc",
+        "description": "La session de la seedbox {seedbox_id} a expiré. Saisissez un nouveau cookie session_id.",
+        "data": {
+          "session_cookie": "Nouveau cookie de session"
+        }
       }
     },
     "error": {
-      "auth": "Le cookie de session est invalide, expiré ou ne donne pas accès à cette seedbox.",
+      "invalid_auth": "Le cookie de session est invalide, expiré ou ne donne pas accès à cette seedbox.",
       "cannot_connect": "Impossible de se connecter à Seedboxes.cc.",
       "unknown": "Erreur inattendue. Consultez les journaux de Home Assistant."
     },
     "abort": {
-      "already_configured": "Cette seedbox est déjà configurée."
+      "already_configured": "Cette seedbox est déjà configurée.",
+      "reauth_successful": "La session Seedboxes.cc a été mise à jour.",
+      "reauth_failed": "Impossible de retrouver l’entrée d’intégration à réauthentifier."
     }
   },
   "options": {
