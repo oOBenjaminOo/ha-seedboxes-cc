@@ -5,13 +5,13 @@ from __future__ import annotations
 from datetime import timedelta
 import logging
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryAuthFailed
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 from .const import (
     CONF_SCAN_PERIOD,
     CONF_SEEDBOX_ID,
-    CONF_SESSION_COOKIE,
     DEFAULT_SCAN_PERIOD,
     DOMAIN,
     PLATFORMS,
@@ -29,6 +29,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if len(hass.data[DOMAIN]) == 0:
         _LOGGER.info(STARTUP_MESSAGE)
 
+    username = entry.data.get(CONF_USERNAME)
+    password = entry.data.get(CONF_PASSWORD)
+    if not username or not password:
+        raise ConfigEntryAuthFailed(
+            "Account credentials are required; reauthenticate the integration"
+        )
+
     scan_period = timedelta(
         seconds=entry.options.get(CONF_SCAN_PERIOD, DEFAULT_SCAN_PERIOD)
     )
@@ -36,7 +43,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = SeedboxDataUpdateCoordinator(
         hass,
         entry.data[CONF_SEEDBOX_ID],
-        entry.data[CONF_SESSION_COOKIE],
+        username,
+        password,
         scan_period,
     )
     await coordinator.async_config_entry_first_refresh()

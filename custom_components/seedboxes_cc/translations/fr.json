@@ -3,28 +3,30 @@
     "step": {
       "user": {
         "title": "Connexion à Seedboxes.cc",
-        "description": "Saisissez l’identifiant de la seedbox et la valeur du cookie session_id provenant d’une session Seedboxes.cc authentifiée dans votre navigateur.",
+        "description": "Saisissez les identifiants de votre compte Seedboxes.cc et l’identifiant de la seedbox. L’intégration se connecte automatiquement sans demander de cookie navigateur.",
         "data": {
           "seedbox_id": "Identifiant de la seedbox",
-          "session_cookie": "Cookie de session"
+          "username": "Adresse e-mail ou nom d’utilisateur",
+          "password": "Mot de passe"
         }
       },
       "reauth_confirm": {
         "title": "Reconnecter Seedboxes.cc",
-        "description": "La session de la seedbox {seedbox_id} a expiré. Saisissez un nouveau cookie session_id.",
+        "description": "L’authentification de la seedbox {seedbox_id} a échoué. Saisissez les identifiants actuels du compte Seedboxes.cc.",
         "data": {
-          "session_cookie": "Nouveau cookie de session"
+          "username": "Adresse e-mail ou nom d’utilisateur",
+          "password": "Mot de passe"
         }
       }
     },
     "error": {
-      "invalid_auth": "Le cookie de session est invalide, expiré ou ne donne pas accès à cette seedbox.",
-      "cannot_connect": "Impossible de se connecter à Seedboxes.cc.",
+      "invalid_auth": "Les identifiants sont invalides ou ce compte n’a pas accès à la seedbox demandée.",
+      "cannot_connect": "Impossible de se connecter à Seedboxes.cc ou de terminer la procédure de connexion.",
       "unknown": "Erreur inattendue. Consultez les journaux de Home Assistant."
     },
     "abort": {
       "already_configured": "Cette seedbox est déjà configurée.",
-      "reauth_successful": "La session Seedboxes.cc a été mise à jour.",
+      "reauth_successful": "Les identifiants du compte Seedboxes.cc ont été mis à jour.",
       "reauth_failed": "Impossible de retrouver l’entrée d’intégration à réauthentifier."
     }
   },

@@ -24,7 +24,8 @@ class SeedboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self,
         hass: HomeAssistant,
         seedbox_id: str,
-        session_cookie: str,
+        username: str,
+        password: str,
         scan_period: timedelta,
     ) -> None:
         """Initialize the coordinator."""
@@ -37,7 +38,8 @@ class SeedboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.api = SeedboxClient(
             async_get_clientsession(hass),
             seedbox_id,
-            session_cookie,
+            username,
+            password,
         )
 
     async def _async_update_data(self) -> dict[str, Any]:
