@@ -1,30 +1,44 @@
 {
   "config": {
-    "abort": {
-      "already_configured": "This seedbox is already configured."
-    },
-    "error": {
-      "auth": "Unable to access the seedbox. Check the seedbox ID and session cookie."
-    },
     "step": {
       "user": {
         "title": "Connect to Seedboxes.cc",
-        "description": "Enter the seedbox ID and the value of the `session_id` cookie from your authenticated Seedboxes.cc dashboard session.",
+        "description": "Enter the seedbox ID and the value of the session_id cookie from an authenticated Seedboxes.cc browser session.",
         "data": {
           "seedbox_id": "Seedbox ID",
           "session_cookie": "Session cookie"
         }
       }
+    },
+    "error": {
+      "auth": "The session cookie is invalid, expired, or does not have access to this seedbox.",
+      "cannot_connect": "Unable to connect to Seedboxes.cc.",
+      "unknown": "Unexpected error. Check the Home Assistant logs."
+    },
+    "abort": {
+      "already_configured": "This seedbox is already configured."
     }
   },
   "options": {
     "step": {
       "user": {
+        "title": "Seedboxes.cc options",
         "data": {
-          "scan_period": "Refresh interval (seconds)",
-          "sensor": "Enable sensors"
+          "scan_period": "Update interval (seconds)"
         }
       }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": { "name": "Status" },
+      "disk_free": { "name": "Free disk space" },
+      "disk_used": { "name": "Used disk space" },
+      "disk_used_percent": { "name": "Disk usage" },
+      "monthly_traffic": { "name": "Monthly traffic" },
+      "disk_size": { "name": "Disk capacity" },
+      "ip_address": { "name": "IP address" },
+      "torrent_client": { "name": "Torrent client" }
     }
   }
 }
