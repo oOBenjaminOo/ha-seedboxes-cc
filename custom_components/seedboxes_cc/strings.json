@@ -1,23 +1,30 @@
 {
-    "config": {
-        "step": {
-            "user": {
-                "title": "Configuration",
-                "description": "Please [enable API access](https://seedboxes.cc/client/settings) and paste your Seedboxes.cc API key below.",
-                "data": {
-                    "api_key": "Seedboxes.cc API Key"
-                }
-            }
-        }
+  "config": {
+    "abort": {
+      "already_configured": "This seedbox is already configured."
     },
-    "options": {
-        "step": {
-            "user": {
-                "data": {
-                    "scan_period": "Scan Period (s)",
-                    "sensor": "Enable Sensors"
-                }
-            }
+    "error": {
+      "auth": "Unable to access the seedbox. Check the seedbox ID and session cookie."
+    },
+    "step": {
+      "user": {
+        "title": "Connect to Seedboxes.cc",
+        "description": "Enter the seedbox ID and the value of the `session_id` cookie from your authenticated Seedboxes.cc dashboard session.",
+        "data": {
+          "seedbox_id": "Seedbox ID",
+          "session_cookie": "Session cookie"
         }
+      }
     }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "data": {
+          "scan_period": "Refresh interval (seconds)",
+          "sensor": "Enable sensors"
+        }
+      }
+    }
+  }
 }
