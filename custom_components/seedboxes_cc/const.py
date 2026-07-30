@@ -10,8 +10,9 @@ ISSUE_URL = "https://github.com/oOBenjaminOo/ha-seedboxes-cc/issues"
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
+CONF_SEEDBOX_ID = "seedbox_id"
+CONF_SESSION_COOKIE = "session_cookie"
 CONF_SCAN_PERIOD = "scan_period"
-CONF_API_KEY = "api_key"
 
 DEFAULT_SCAN_PERIOD = 900
 MIN_SCAN_PERIOD = 300
