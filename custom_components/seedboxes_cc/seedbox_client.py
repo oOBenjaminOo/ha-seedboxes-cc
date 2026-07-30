@@ -39,16 +39,17 @@ class SeedboxDataError(Exception):
 
 
 class _LoginFormParser(HTMLParser):
-    """Extract the Keycloak login form and its fields."""
+    """Extract a Keycloak authentication form and its input fields."""
 
     def __init__(self) -> None:
         super().__init__()
         self.action: str | None = None
         self.fields: dict[str, str] = {}
+        self.field_types: dict[str, str] = {}
         self._inside_form = False
         self._candidate_action: str | None = None
         self._candidate_fields: dict[str, str] = {}
-        self._candidate_has_password = False
+        self._candidate_types: dict[str, str] = {}
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = dict(attrs)
@@ -56,24 +57,37 @@ class _LoginFormParser(HTMLParser):
             self._inside_form = True
             self._candidate_action = attributes.get("action")
             self._candidate_fields = {}
-            self._candidate_has_password = False
+            self._candidate_types = {}
             return
         if tag != "input" or not self._inside_form:
             return
         name = attributes.get("name")
         if not name:
             return
-        if (attributes.get("type") or "text").lower() == "password":
-            self._candidate_has_password = True
         self._candidate_fields[name] = attributes.get("value") or ""
+        self._candidate_types[name] = (attributes.get("type") or "text").lower()
 
     def handle_endtag(self, tag: str) -> None:
         if tag != "form" or not self._inside_form:
             return
-        if self.action is None and self._candidate_has_password:
+        action = self._candidate_action or ""
+        if self.action is None and "/login-actions/" in unescape(action):
             self.action = self._candidate_action
             self.fields = self._candidate_fields
+            self.field_types = self._candidate_types
         self._inside_form = False
+
+    @property
+    def has_username(self) -> bool:
+        """Return whether this step accepts a username."""
+        return "username" in self.fields
+
+    @property
+    def has_password(self) -> bool:
+        """Return whether this step accepts a password."""
+        return "password" in self.fields or any(
+            field_type == "password" for field_type in self.field_types.values()
+        )
 
 
 class SeedboxClient:
@@ -143,11 +157,12 @@ class SeedboxClient:
         }}
 
     async def _async_login(self, force: bool = False) -> None:
-        """Create an authenticated Seedboxes.cc session."""
+        """Create an authenticated Seedboxes.cc session through Keycloak."""
         async with self._login_lock:
             if self._session_cookie is not None and not force:
                 return
-            timeout = aiohttp.ClientTimeout(total=45)
+
+            timeout = aiohttp.ClientTimeout(total=60)
             cookie_jar = aiohttp.CookieJar()
             async with aiohttp.ClientSession(
                 timeout=timeout,
@@ -156,42 +171,78 @@ class SeedboxClient:
             ) as login_session:
                 async with login_session.get(LOGIN_URL, allow_redirects=True) as response:
                     if response.status != 200:
-                        raise SeedboxDataError(f"Login page returned HTTP {response.status}")
-                    login_page = await response.text()
-                    login_page_url = str(response.url)
+                        raise SeedboxDataError(
+                            f"Login page returned HTTP {response.status}"
+                        )
+                    page_text = await response.text()
+                    page_url = str(response.url)
 
-                parser = _LoginFormParser()
-                parser.feed(login_page)
-                if not parser.action:
-                    raise SeedboxDataError("Unable to find the authentication form")
-                authentication_url = urljoin(login_page_url, unescape(parser.action))
-                parsed_url = urlparse(authentication_url)
-                if (
-                    parsed_url.scheme != "https"
-                    or parsed_url.hostname != GATEKEEPER_HOST
-                    or "/login-actions/authenticate" not in parsed_url.path
-                ):
-                    raise SeedboxDataError("Unexpected authentication endpoint")
+                submitted_username = False
+                submitted_password = False
 
-                form_data = dict(parser.fields)
-                form_data.update({"username": self._username, "password": self._password})
-                form_data.setdefault("credentialId", "")
-                async with login_session.post(
-                    authentication_url, data=form_data, allow_redirects=True
-                ) as response:
-                    final_url = str(response.url)
-                    response_text = await response.text()
-                    if response.status != 200:
-                        raise SeedboxAuthenticationError(
-                            f"Authentication returned HTTP {response.status}"
+                for _step in range(4):
+                    session_cookie = cookie_jar.filter_cookies(URL(BASE_URL)).get(
+                        "session_id"
+                    )
+                    if session_cookie is not None:
+                        self._session_cookie = session_cookie.value
+                        return
+
+                    parser = _LoginFormParser()
+                    parser.feed(page_text)
+                    if not parser.action:
+                        raise SeedboxDataError(
+                            "Unable to find the Keycloak authentication form"
                         )
 
-                session_cookie = cookie_jar.filter_cookies(URL(BASE_URL)).get("session_id")
-                if session_cookie is None:
-                    if "login-actions/authenticate" in final_url or "kc-form-login" in response_text:
-                        raise SeedboxAuthenticationError("Invalid username or password")
-                    raise SeedboxDataError("Seedboxes.cc did not create a session")
-                self._session_cookie = session_cookie.value
+                    authentication_url = urljoin(
+                        page_url, unescape(parser.action)
+                    )
+                    parsed_url = urlparse(authentication_url)
+                    if (
+                        parsed_url.scheme != "https"
+                        or parsed_url.hostname != GATEKEEPER_HOST
+                        or "/login-actions/" not in parsed_url.path
+                    ):
+                        raise SeedboxDataError(
+                            "Unexpected Keycloak authentication endpoint"
+                        )
+
+                    form_data = dict(parser.fields)
+                    if parser.has_username:
+                        form_data["username"] = self._username
+                        submitted_username = True
+                    if parser.has_password:
+                        form_data["password"] = self._password
+                        submitted_password = True
+                    form_data.setdefault("credentialId", "")
+
+                    async with login_session.post(
+                        authentication_url,
+                        data=form_data,
+                        allow_redirects=True,
+                    ) as response:
+                        page_url = str(response.url)
+                        page_text = await response.text()
+                        if response.status != 200:
+                            raise SeedboxAuthenticationError(
+                                f"Authentication returned HTTP {response.status}"
+                            )
+
+                session_cookie = cookie_jar.filter_cookies(URL(BASE_URL)).get(
+                    "session_id"
+                )
+                if session_cookie is not None:
+                    self._session_cookie = session_cookie.value
+                    return
+
+                if submitted_username or submitted_password:
+                    raise SeedboxAuthenticationError(
+                        "Seedboxes.cc rejected the username or password"
+                    )
+                raise SeedboxDataError(
+                    "Seedboxes.cc did not complete the authentication flow"
+                )
 
     def _headers(self) -> dict[str, str]:
         return {
@@ -203,14 +254,20 @@ class SeedboxClient:
     async def _async_fetch_seedbox(self, seedbox_id: str) -> dict[str, Any]:
         """Fetch one seedbox from the JSON endpoint."""
         url = f"{BASE_URL}/api/seedbox/{seedbox_id}"
-        async with self._session.get(url, headers=self._headers(), allow_redirects=False) as response:
+        async with self._session.get(
+            url, headers=self._headers(), allow_redirects=False
+        ) as response:
             if response.status in (301, 302, 303, 307, 308, 401, 403):
                 self._session_cookie = None
                 raise SeedboxAuthenticationError("Session is invalid or expired")
             if response.status == 404:
-                raise SeedboxAuthenticationError("Seedbox is not available for this account")
+                raise SeedboxAuthenticationError(
+                    "Seedbox is not available for this account"
+                )
             if response.status != 200:
-                raise SeedboxDataError(f"Seedbox API returned HTTP {response.status}")
+                raise SeedboxDataError(
+                    f"Seedbox API returned HTTP {response.status}"
+                )
             payload = await response.json(content_type=None)
         if not payload.get("success") or not isinstance(payload.get("data"), dict):
             raise SeedboxDataError("Seedbox API returned an invalid response")
@@ -267,7 +324,9 @@ class SeedboxClient:
             self._session_cookie = None
             raise SeedboxAuthenticationError("Session is invalid or expired")
         if response.status != 200:
-            raise SeedboxDataError(f"Telemetry stream returned HTTP {response.status}")
+            raise SeedboxDataError(
+                f"Telemetry stream returned HTTP {response.status}"
+            )
 
     @staticmethod
     def _parse_sse_line(raw_line: bytes) -> dict[str, Any] | None:
