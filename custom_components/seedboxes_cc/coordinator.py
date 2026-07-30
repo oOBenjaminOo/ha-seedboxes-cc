@@ -7,10 +7,11 @@ import logging
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DOMAIN
-from .seedbox_client import seedbox_client
+from .seedbox_client import SeedboxClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +22,8 @@ class SeedboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def __init__(
         self,
         hass: HomeAssistant,
-        api_key: str,
+        seedbox_id: str,
+        session_cookie: str,
         scan_period: timedelta,
     ) -> None:
         """Initialize the coordinator."""
@@ -31,7 +33,11 @@ class SeedboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             name=DOMAIN,
             update_interval=scan_period,
         )
-        self.api = seedbox_client(api_key)
+        self.api = SeedboxClient(
+            async_get_clientsession(hass),
+            seedbox_id,
+            session_cookie,
+        )
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch the latest Seedboxes.cc data."""
