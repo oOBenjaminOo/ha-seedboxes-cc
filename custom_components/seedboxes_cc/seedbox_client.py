@@ -104,7 +104,7 @@ class SeedboxClient:
         self._seedbox_id = str(seedbox_id) if seedbox_id is not None else None
         self._username = username.strip()
         self._password = password
-        self._session_cookie: str | None = None
+        self._cookie_header: str | None = None
         self._login_lock = asyncio.Lock()
 
     async def async_validate_credentials(self) -> None:
@@ -128,7 +128,7 @@ class SeedboxClient:
         """Fetch structured seedbox data from the JSON API and telemetry stream."""
         if self._seedbox_id is None:
             raise SeedboxDataError("No seedbox is selected")
-        if self._session_cookie is None:
+        if self._cookie_header is None:
             await self._async_login()
         try:
             details = await self._async_fetch_seedbox(self._seedbox_id)
@@ -145,23 +145,26 @@ class SeedboxClient:
         server = details.get("server") or {}
         product = details.get("product") or {}
 
-        return {"data": {
-            NAME_DISK_QUOTA_FREE: disk_free,
-            NAME_DISK_QUOTA_USED: disk_used,
-            NAME_DISK_QUOTA_USED_PCT: disk_used_pct,
-            NAME_MONTHLY_TRAFFIC: float(details.get("monthly_traffic") or 0) * 1000,
-            NAME_DISK_SIZE: disk_size,
-            NAME_IP_ADDRESS: server.get("ip"),
-            NAME_TORRENT_CLIENT: details.get("torrent_client"),
-            NAME_STATUS: product.get("status") or telemetry.get("status") or "Unknown",
-        }}
+        return {
+            "data": {
+                NAME_DISK_QUOTA_FREE: disk_free,
+                NAME_DISK_QUOTA_USED: disk_used,
+                NAME_DISK_QUOTA_USED_PCT: disk_used_pct,
+                NAME_MONTHLY_TRAFFIC: float(details.get("monthly_traffic") or 0) * 1000,
+                NAME_DISK_SIZE: disk_size,
+                NAME_IP_ADDRESS: server.get("ip"),
+                NAME_TORRENT_CLIENT: details.get("torrent_client"),
+                NAME_STATUS: product.get("status") or telemetry.get("status") or "Unknown",
+            }
+        }
 
     async def _async_login(self, force: bool = False) -> None:
         """Create an authenticated Seedboxes.cc session through Keycloak."""
         async with self._login_lock:
-            if self._session_cookie is not None and not force:
+            if self._cookie_header is not None and not force:
                 return
 
+            self._cookie_header = None
             timeout = aiohttp.ClientTimeout(total=60)
             cookie_jar = aiohttp.CookieJar()
             async with aiohttp.ClientSession(
@@ -181,11 +184,9 @@ class SeedboxClient:
                 submitted_password = False
 
                 for _step in range(4):
-                    session_cookie = cookie_jar.filter_cookies(URL(BASE_URL)).get(
-                        "session_id"
-                    )
-                    if session_cookie is not None:
-                        self._session_cookie = session_cookie.value
+                    cookie_header = self._build_cookie_header(cookie_jar)
+                    if cookie_header and urlparse(page_url).hostname == "www.seedboxes.cc":
+                        self._cookie_header = cookie_header
                         return
 
                     parser = _LoginFormParser()
@@ -195,9 +196,7 @@ class SeedboxClient:
                             "Unable to find the Keycloak authentication form"
                         )
 
-                    authentication_url = urljoin(
-                        page_url, unescape(parser.action)
-                    )
+                    authentication_url = urljoin(page_url, unescape(parser.action))
                     parsed_url = urlparse(authentication_url)
                     if (
                         parsed_url.scheme != "https"
@@ -229,11 +228,9 @@ class SeedboxClient:
                                 f"Authentication returned HTTP {response.status}"
                             )
 
-                session_cookie = cookie_jar.filter_cookies(URL(BASE_URL)).get(
-                    "session_id"
-                )
-                if session_cookie is not None:
-                    self._session_cookie = session_cookie.value
+                cookie_header = self._build_cookie_header(cookie_jar)
+                if cookie_header:
+                    self._cookie_header = cookie_header
                     return
 
                 if submitted_username or submitted_password:
@@ -244,12 +241,28 @@ class SeedboxClient:
                     "Seedboxes.cc did not complete the authentication flow"
                 )
 
+    @staticmethod
+    def _build_cookie_header(cookie_jar: aiohttp.CookieJar) -> str | None:
+        """Build a complete Cookie header for the Seedboxes.cc API host."""
+        cookies = cookie_jar.filter_cookies(URL(BASE_URL))
+        if not cookies:
+            return None
+        return "; ".join(
+            f"{name}={morsel.value}" for name, morsel in cookies.items()
+        )
+
     def _headers(self) -> dict[str, str]:
+        if self._cookie_header is None:
+            raise SeedboxAuthenticationError("No authenticated session is available")
         return {
-            "Cookie": f"session_id={self._session_cookie}",
+            "Cookie": self._cookie_header,
             "User-Agent": USER_AGENT,
             "Accept": "application/json",
         }
+
+    def _invalidate_session(self) -> None:
+        """Forget the current authenticated cookie set."""
+        self._cookie_header = None
 
     async def _async_fetch_seedbox(self, seedbox_id: str) -> dict[str, Any]:
         """Fetch one seedbox from the JSON endpoint."""
@@ -258,7 +271,7 @@ class SeedboxClient:
             url, headers=self._headers(), allow_redirects=False
         ) as response:
             if response.status in (301, 302, 303, 307, 308, 401, 403):
-                self._session_cookie = None
+                self._invalidate_session()
                 raise SeedboxAuthenticationError("Session is invalid or expired")
             if response.status == 404:
                 raise SeedboxAuthenticationError(
@@ -321,7 +334,7 @@ class SeedboxClient:
 
     def _check_stream_response(self, response: aiohttp.ClientResponse) -> None:
         if response.status in (301, 302, 303, 307, 308, 401, 403):
-            self._session_cookie = None
+            self._invalidate_session()
             raise SeedboxAuthenticationError("Session is invalid or expired")
         if response.status != 200:
             raise SeedboxDataError(
