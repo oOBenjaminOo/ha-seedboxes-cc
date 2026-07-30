@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+import logging
 from typing import Any
 
 from homeassistant import config_entries
@@ -21,6 +22,8 @@ from .const import (
 )
 from .seedbox_client import SeedboxAuthenticationError, SeedboxClient, SeedboxDataError
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Seedboxes.cc."""
@@ -31,6 +34,7 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self._username: str | None = None
         self._password: str | None = None
         self._discovered: dict[str, dict[str, Any]] = {}
+        self._reauth_entry = None
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -49,13 +53,29 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     self._password,
                 )
                 self._discovered = await client.async_discover_seedboxes()
-            except SeedboxAuthenticationError:
+            except SeedboxAuthenticationError as err:
+                _LOGGER.warning(
+                    "Seedboxes.cc authentication failed during automatic discovery: %s",
+                    err,
+                )
                 errors["base"] = "invalid_auth"
-            except (SeedboxDataError, TimeoutError):
+            except (SeedboxDataError, TimeoutError) as err:
+                _LOGGER.error(
+                    "Seedboxes.cc automatic discovery failed: %s",
+                    err,
+                    exc_info=True,
+                )
                 errors["base"] = "cannot_connect"
-            except Exception:  # noqa: BLE001
+            except Exception:
+                _LOGGER.exception(
+                    "Unexpected error while authenticating with Seedboxes.cc and discovering seedboxes"
+                )
                 errors["base"] = "unknown"
             else:
+                _LOGGER.debug(
+                    "Seedboxes.cc automatic discovery found %d seedbox(es)",
+                    len(self._discovered),
+                )
                 if len(self._discovered) == 1:
                     seedbox_id = next(iter(self._discovered))
                     return await self._async_create_seedbox_entry(seedbox_id)
@@ -152,11 +172,26 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     password,
                 )
                 await client.async_validate_credentials()
-            except SeedboxAuthenticationError:
+            except SeedboxAuthenticationError as err:
+                _LOGGER.warning(
+                    "Seedboxes.cc reauthentication failed for seedbox %s: %s",
+                    seedbox_id,
+                    err,
+                )
                 errors["base"] = "invalid_auth"
-            except (SeedboxDataError, TimeoutError):
+            except (SeedboxDataError, TimeoutError) as err:
+                _LOGGER.error(
+                    "Seedboxes.cc reauthentication could not validate seedbox %s: %s",
+                    seedbox_id,
+                    err,
+                    exc_info=True,
+                )
                 errors["base"] = "cannot_connect"
-            except Exception:  # noqa: BLE001
+            except Exception:
+                _LOGGER.exception(
+                    "Unexpected error while reauthenticating Seedboxes.cc seedbox %s",
+                    seedbox_id,
+                )
                 errors["base"] = "unknown"
             else:
                 self.hass.config_entries.async_update_entry(
