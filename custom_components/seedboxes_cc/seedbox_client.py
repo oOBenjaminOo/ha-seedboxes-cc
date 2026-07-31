@@ -359,13 +359,12 @@ class SeedboxClient:
 
     @staticmethod
     def _build_cookie_header(cookie_jar: aiohttp.CookieJar) -> str | None:
-        """Build a complete Cookie header for the Seedboxes.cc API host."""
+        """Return the authenticated Seedboxes.cc session cookie."""
         cookies = cookie_jar.filter_cookies(URL(BASE_URL))
-        if not cookies:
+        session_cookie = cookies.get("session_id")
+        if session_cookie is None or not session_cookie.value:
             return None
-        return "; ".join(
-            f"{name}={morsel.value}" for name, morsel in cookies.items()
-        )
+        return f"session_id={session_cookie.value}"
 
     def _headers(self) -> dict[str, str]:
         if self._cookie_header is None:
