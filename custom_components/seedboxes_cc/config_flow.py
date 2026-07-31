@@ -10,9 +10,16 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import (
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
+)
 import voluptuous as vol
 
 from .const import (
+    CONFIG_ENTRY_MINOR_VERSION,
+    CONFIG_ENTRY_VERSION,
     CONF_SCAN_PERIOD,
     CONF_SEEDBOX_ID,
     CONF_SESSION_COOKIE,
@@ -31,11 +38,28 @@ from .seedbox_client import (
 
 _LOGGER = logging.getLogger(__name__)
 
+_USERNAME_SELECTOR = TextSelector(
+    TextSelectorConfig(autocomplete="username")
+)
+_PASSWORD_SELECTOR = TextSelector(
+    TextSelectorConfig(
+        type=TextSelectorType.PASSWORD,
+        autocomplete="current-password",
+    )
+)
+_SESSION_COOKIE_SELECTOR = TextSelector(
+    TextSelectorConfig(
+        type=TextSelectorType.PASSWORD,
+        autocomplete="off",
+    )
+)
+
 
 class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Seedboxes.cc."""
 
-    VERSION = 5
+    VERSION = CONFIG_ENTRY_VERSION
+    MINOR_VERSION = CONFIG_ENTRY_MINOR_VERSION
 
     def __init__(self) -> None:
         self._username: str | None = None
@@ -98,8 +122,8 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_USERNAME): str,
-                    vol.Required(CONF_PASSWORD): str,
+                    vol.Required(CONF_USERNAME): _USERNAME_SELECTOR,
+                    vol.Required(CONF_PASSWORD): _PASSWORD_SELECTOR,
                 }
             ),
             errors=errors,
@@ -151,7 +175,9 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_SEEDBOX_ID): str,
-                    vol.Required(CONF_SESSION_COOKIE): str,
+                    vol.Required(
+                        CONF_SESSION_COOKIE
+                    ): _SESSION_COOKIE_SELECTOR,
                 }
             ),
             errors=errors,
@@ -271,6 +297,7 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: password,
                     },
                     version=self.VERSION,
+                    minor_version=self.MINOR_VERSION,
                 )
                 await self.hass.config_entries.async_reload(
                     self._reauth_entry.entry_id
@@ -281,8 +308,10 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="reauth_confirm",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_USERNAME, default=current_username): str,
-                    vol.Required(CONF_PASSWORD): str,
+                    vol.Required(
+                        CONF_USERNAME, default=current_username
+                    ): _USERNAME_SELECTOR,
+                    vol.Required(CONF_PASSWORD): _PASSWORD_SELECTOR,
                 }
             ),
             errors=errors,
@@ -325,6 +354,7 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_SESSION_COOKIE: session_cookie,
                     },
                     version=self.VERSION,
+                    minor_version=self.MINOR_VERSION,
                 )
                 await self.hass.config_entries.async_reload(
                     self._reauth_entry.entry_id
@@ -334,7 +364,11 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="reauth_session_cookie",
             data_schema=vol.Schema(
-                {vol.Required(CONF_SESSION_COOKIE): str}
+                {
+                    vol.Required(
+                        CONF_SESSION_COOKIE
+                    ): _SESSION_COOKIE_SELECTOR
+                }
             ),
             errors=errors,
             description_placeholders={"seedbox_id": seedbox_id},
