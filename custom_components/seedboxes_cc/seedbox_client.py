@@ -386,4 +386,596 @@ class SeedboxClient:
         url: str,
         form_data: dict[str, str] | None = None,
     ) -> tuple[int, str, str, str | None]:
-        """Request one login page while following only trusted redirects.""ÛÏy¶‰žËkºwµçA¥˜‘…Ñ„¹•Ð ‰ÑåÁ”ˆ¤€ôô€‰‘¥Í­ÍÁ…”ˆ…¹‘…Ñ„¹•Ð ‰µ•ÑÉ¥Œˆ¤€ôô€‰ÕÍ•ˆè(€€€€€€€€€€€€€€€€€€€€€€€É•ÍÕ±Ñl‰‘¥Í­}ÕÍ•‘}‰åÑ•Ì‰t€ô™±½…Ð¡‘…Ñ„¹•Ð ‰Ù…±Õ”ˆ¤½È€À¤(€€€€€€€€€€€€€€€€€€€€€€€‰É•…¬(€€€€€€€¥˜€‰‘¥Í­}ÕÍ•‘}‰åÑ•Ìˆ¹½Ð¥¸É•ÍÕ±Ðè(€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È ‰9¼‘¥Í¬µÍÁ…”Ñ•±•µ•ÑÉäÝ…ÌÉ••¥Ù•ˆ¤(€€€€€€€É•ÑÕÉ¸É•ÍÕ±Ð((€€€‘•˜}¡•­}ÍÑÉ•…µ}É•ÍÁ½¹Í”¡Í•±˜°É•ÍÁ½¹Í”è…¥½¡ÑÑÀ¹±¥•¹ÑI•ÍÁ½¹Í”¤€´ø9½¹”è(€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ¥¸MMM%=9}aA%I}MQQUMLè(€€€€€€€€€€€Í•±˜¹}¥¹Ù…±¥‘…Ñ•}Í•ÍÍ¥½¸ ¤(€€€€€€€€€€€É…¥Í”M••‘‰½áM•ÍÍ¥½¹áÁ¥É•‘ÉÉ½È ‰M•ÍÍ¥½¸¥Ì¥¹Ù…±¥½È•áÁ¥É•ˆ¤(€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ€„ô€ÈÀÀè(€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È¡˜‰Q•±•µ•ÑÉäÍÑÉ•…´É•ÑÕÉ¹•!QQ@íÉ•ÍÁ½¹Í”¹ÍÑ…ÑÕÍôˆ¤((€€€ÍÑ…Ñ¥µ•Ñ¡½(€€€‘•˜}Á…ÉÍ•}ÍÍ•}±¥¹”¡É…Ý}±¥¹”è‰åÑ•Ì¤€´ø‘¥ÑmÍÑÈ°¹åtð9½¹”è(€€€€€€€±¥¹”€ôÉ…Ý}±¥¹”¹‘•½‘”¡•ÉÉ½ÉÌô‰É•Á±…”ˆ¤¹ÍÑÉ¥À ¤(€€€€€€€¥˜¹½Ð±¥¹”¹ÍÑ…ÉÑÍÝ¥Ñ  ‰‘…Ñ„èˆ¤è(€€€€€€€€€€€É•ÑÕÉ¸9½¹”(€€€€€€€ÑÉäè(€€€€€€€€€€€Á…å±½…€ô©Í½¸¹±½…‘Ì¡±¥¹•lÔét¹ÍÑÉ¥À ¤¤(€€€€€€€•á•ÁÐ©Í½¸¹)M=9•½‘•ÉÉ½Èè(€€€€€€€€€€€É•ÑÕÉ¸9½¹”(€€€€€€€É•ÑÕÉ¸Á…å±½…¥˜¥Í¥¹ÍÑ…¹”¡Á…å±½…°‘¥Ð¤•±Í”9½¹”(()±…ÍÌM•ÍÍ¥½¹½½­¥•M••‘‰½á±¥•¹Ðè(€€€€ˆˆ‰I•ÑÉ¥•Ù”Í••‘‰½à¥¹™½Éµ…Ñ¥½¸Ý¥Ñ „‰É½ÝÍ•ÈÍ•ÍÍ¥½¸½½­¥”¸ˆˆˆ((€€€‘•˜}}¥¹¥Ñ}| (€€€€€€€Í•±˜°(€€€€€€€Í•ÍÍ¥½¸è…¥½¡ÑÑÀ¹±¥•¹ÑM•ÍÍ¥½¸°(€€€€€€€Í••‘‰½á}¥èÍÑÈð9½¹”°(€€€€€€€Í•ÍÍ¥½¹}½½­¥”èÍÑÈ°(€€€€¤€´ø9½¹”è(€€€€€€€Í•±˜¹}Í•ÍÍ¥½¸€ôÍ•ÍÍ¥½¸(€€€€€€€Í•±˜¹}Í••‘‰½á}¥€ô€ (€€€€€€€€€€€Ù…±¥‘…Ñ•}Í••‘‰½á}¥¡Í••‘‰½á}¥¤¥˜Í••‘‰½á}¥¥Ì¹½Ð9½¹”•±Í”9½¹”(€€€€€€€€¤(€€€€€€€Í•±˜¹}Í•ÍÍ¥½¹}½½­¥”€ôÙ…±¥‘…Ñ•}Í•ÍÍ¥½¹}½½­¥”¡Í•ÍÍ¥½¹}½½­¥”¤((€€€ÁÉ½Á•ÉÑä(€€€‘•˜Í•ÍÍ¥½¹}½½­¥”¡Í•±˜¤€´øÍÑÈè(€€€€€€€€ˆˆ‰I•ÑÕÉ¸Ñ¡”ÕÉÉ•¹ÐÉ…ÜÍ•ÍÍ¥½¹}¥Ù…±Õ”¸ˆˆˆ(€€€€€€€É•ÑÕÉ¸Í•±˜¹}Í•ÍÍ¥½¹}½½­¥”((€€€…Íå¹Œ‘•˜…Íå¹}Ù…±¥‘…Ñ•}É•‘•¹Ñ¥…±Ì¡Í•±˜¤€´ø9½¹”è(€€€€€€€€ˆˆ‰Y…±¥‘…Ñ”Ñ¡”‰É½ÝÍ•ÈÍ•ÍÍ¥½¸…¹Í••‘‰½à…•ÍÌ¸ˆˆˆ(€€€€€€€¥˜Í•±˜¹}Í••‘‰½á}¥¥Ì9½¹”è(€€€€€€€€€€€…Ý…¥ÐÍ•±˜¹…Íå¹}‘¥Í½Ù•É}Í••‘‰½á•Ì ¤(€€€€€€€•±Í”è(€€€€€€€€€€€…Ý…¥ÐÍ•±˜¹…Íå¹}•Ñ}‘…Ñ„ ¤((€€€…Íå¹Œ‘•˜…Íå¹}‘¥Í½Ù•É}Í••‘‰½á•Ì¡Í•±˜¤€´ø‘¥ÑmÍÑÈ°‘¥ÑmÍÑÈ°¹åutè(€€€€€€€€ˆˆ‰¥Í½Ù•ÈÍ••‘‰½à%Ì…Ù…¥±…‰±”Ñ¼Ñ¡¥Ì‰É½ÝÍ•ÈÍ•ÍÍ¥½¸¸ˆˆˆ(€€€€€€€ÑÉäè(€€€€€€€€€€€¥‘Ì€ô…Ý…¥ÐÍ•±˜¹}…Íå¹}É•…‘}Ñ•±•µ•ÑÉå}¥‘Ì ¤(€€€€€€€•á•ÁÐM••‘‰½áM•ÍÍ¥½¹áÁ¥É•‘ÉÉ½Èè(€€€€€€€€€€€É…¥Í”(€€€€€€€•á•ÁÐ€¡M••‘‰½á…Ñ…ÉÉ½È°Q¥µ•½ÕÑÉÉ½È¤è(€€€€€€€€€€€¥‘Ì€ôÍ•Ð ¤((€€€€€€€¥˜¹½Ð¥‘Ìè(€€€€€€€€€€€¥‘Ì€ô…Ý…¥ÐÍ•±˜¹}…Íå¹}É•…‘}‘…Í¡‰½…É‘}¥‘Ì ¤(€€€€€€€¥˜¹½Ð¥‘Ìè(€€€€€€€€€€€É…¥Í”M••‘‰½á¥Í½Ù•ÉåÉÉ½È (€€€€€€€€€€€€€€€€‰9¼Í••‘‰½à%½Õ±‰”‘¥Í½Ù•É•™É½´Ñ¡¥ÌÍ•ÍÍ¥½¸ˆ(€€€€€€€€€€€€¤(€€€€€€€É•ÑÕÉ¸íÍ••‘‰½á}¥èíô™½ÈÍ••‘‰½á}¥¥¸Í½ÉÑ•¡¥‘Ì¥ô((€€€…Íå¹Œ‘•˜…Íå¹}•Ñ}‘…Ñ„¡Í•±˜¤€´ø‘¥ÑmÍÑÈ°¹åtè(€€€€€€€€ˆˆ‰•Ñ …¹Á…ÉÍ”Ñ¡”…ÕÑ¡•¹Ñ¥…Ñ•‘…Í¡‰½…ÉÁ…”¸ˆˆˆ(€€€€€€€¥˜Í•±˜¹}Í••‘‰½á}¥¥Ì9½¹”è(€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È ‰9¼Í••‘‰½à¥ÌÍ•±•Ñ•ˆ¤(€€€€€€€ÕÉ°€ô˜‰í	M}UI1ô½‘…Í¡‰½…É½Í••‘‰½á•Ì½íÍ•±˜¹}Í••‘‰½á}¥‘ôˆ((€€€€€€€…Íå¹ŒÝ¥Ñ Í•±˜¹}Í•ÍÍ¥½¸¹•Ð (€€€€€€€€€€€ÕÉ°°¡•…‘•ÉÌõÍ•±˜¹}¡•…‘•ÉÌ ¤°…±±½Ý}É•‘¥É•ÑÌõ…±Í”(€€€€€€€€¤…ÌÉ•ÍÁ½¹Í”è(€€€€€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ¥¸MMM%=9}aA%I}MQQUMLè(€€€€€€€€€€€€€€€É…¥Í”M••‘‰½áM•ÍÍ¥½¹áÁ¥É•‘ÉÉ½È ‰M•ÍÍ¥½¸½½­¥”¥Ì¥¹Ù…±¥½È•áÁ¥É•ˆ¤(€€€€€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ€ôô€ÐÀÐè(€€€€€€€€€€€€€€€É…¥Í”M••‘‰½áÕÑ¡•¹Ñ¥…Ñ¥½¹ÉÉ½È (€€€€€€€€€€€€€€€€€€€€‰Q¡”É•ÅÕ•ÍÑ•Í••‘‰½à¥Ì¹½Ð…Ù…¥±…‰±”¥¸Ñ¡¥ÌÍ•ÍÍ¥½¸ˆ(€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ€„ô€ÈÀÀè(€€€€€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È¡˜‰…Í¡‰½…ÉÉ•ÑÕÉ¹•!QQ@íÉ•ÍÁ½¹Í”¹ÍÑ…ÑÕÍôˆ¤(€€€€€€€€€€€É•Á±…•µ•¹Ñ}½½­¥”€ôÍ•±˜¹}É•ÍÁ½¹Í•}Í•ÍÍ¥½¹}½½­¥”¡É•ÍÁ½¹Í”¤(€€€€€€€€€€€¡Ñµ°€ô…Ý…¥ÐÉ•ÍÁ½¹Í”¹Ñ•áÐ ¤((€€€€€€€¥˜˜qp‰Í••‘‰½á%‘qpˆéqp‰íÍ•±˜¹}Í••‘‰½á}¥‘õqpˆœ¹½Ð¥¸¡Ñµ°è(€€€€€€€€€€€¥˜Í•±˜¹}±½½­Í}±¥­•}…ÕÑ¡•¹Ñ¥…Ñ¥½¹}Á…”¡¡Ñµ°¤è(€€€€€€€€€€€€€€€É…¥Í”M••‘‰½áM•ÍÍ¥½¹áÁ¥É•‘ÉÉ½È ‰M•ÍÍ¥½¸½½­¥”¥Ì¥¹Ù…±¥½È•áÁ¥É•ˆ¤(€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È (€€€€€€€€€€€€€€€€‰…Í¡‰½…ÉÉ•ÍÁ½¹Í”‘¥¹½Ð½¹Ñ…¥¸Ñ¡”Í•±•Ñ•Í••‘‰½àˆ(€€€€€€€€€€€€¤((€€€€€€€‘¥Í­}Í¥é”€ô™±½…Ð¡Í•±˜¹}•áÑÉ…Ñ}¹Õµ‰•È¡¡Ñµ°°€‰‘¥Í­MÁ…•1¥µ¥Ðˆ¤¤(€€€€€€€ÑÉ…™™¥}É…Ü€ô™±½…Ð¡Í•±˜¹}•áÑÉ…Ñ}¹Õµ‰•È¡¡Ñµ°°€‰ÕÉÉ•¹Ñ5½¹Ñ¡QÉ…™™¥Œˆ¤¤(€€€€€€€µ•ÑÉ¥Ì€ôÉ”¹™¥¹‘…±° (€€€€€€€€€€€Èqp‰‘¥Í­ÍÁ…•qpˆè¡q¬¤±qp‰ÑÉ…™™¥qpˆè¡q¬¤œ°(€€€€€€€€€€€¡Ñµ°°(€€€€€€€€¤(€€€€€€€¥˜¹½Ðµ•ÑÉ¥Ìè(€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È ‰9¼Ñ•±•µ•ÑÉäµ•ÑÉ¥Ì™½Õ¹¥¸‘…Í¡‰½…ÉÁ…”ˆ¤((€€€€€€€‘¥Í­}ÕÍ•‘}µˆ€ô™±½…Ð¡µ•ÑÉ¥Íl´ÅulÁt¤(€€€€€€€‘¥Í­}ÕÍ•‘}ˆ€ôÉ½Õ¹¡‘¥Í­}ÕÍ•‘}µˆ€¼€ÄÀÀÀ°€È¤(€€€€€€€‘¥Í­}™É••}ˆ€ôÉ½Õ¹¡µ…à¡‘¥Í­}Í¥é”€´‘¥Í­}ÕÍ•‘}ˆ°€À¤°€È¤(€€€€€€€‘¥Í­}ÕÍ•‘}ÁÐ€ôÉ½Õ¹ ¡‘¥Í­}ÕÍ•‘}ˆ€¼‘¥Í­}Í¥é”¤€¨€ÄÀÀ°€È¤¥˜‘¥Í­}Í¥é”•±Í”€À((€€€€€€€É•ÍÕ±Ð€ôì(€€€€€€€€€€€€‰‘…Ñ„ˆèì(€€€€€€€€€€€€€€€95}%M-}EU=Q}Iè‘¥Í­}™É••}ˆ°(€€€€€€€€€€€€€€€95}%M-}EU=Q}UMè‘¥Í­}ÕÍ•‘}ˆ°(€€€€€€€€€€€€€€€95}%M-}EU=Q}UM}APè‘¥Í­}ÕÍ•‘}ÁÐ°(€€€€€€€€€€€€€€€95}5=9Q!1e}QI%èÉ½Õ¹¡ÑÉ…™™¥}É…Ü€¼€ÄÀÈÐ°€È¤°(€€€€€€€€€€€€€€€95}%M-}M%iè‘¥Í­}Í¥é”°(€€€€€€€€€€€€€€€95}%A}IMLèÍ•±˜¹}•áÑÉ…Ñ}Ñ…‰±•}Ù…±Õ”¡¡Ñµ°°€‰M•ÉÙ•È%@ˆ¤°(€€€€€€€€€€€€€€€95}Q=II9Q}1%9PèÍ•±˜¹}•áÑÉ…Ñ}½ÁÑ¥½¹…±}Ñ…‰±•}Ù…±Õ” (€€€€€€€€€€€€€€€€€€€¡Ñµ°°€‰Q½ÉÉ•¹Ð±¥•¹Ðˆ(€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€€€€95}MQQULèÍ•±˜¹}•áÑÉ…Ñ}Ñ…‰±•}Ù…±Õ”¡¡Ñµ°°€‰MÑ…ÑÕÌˆ¤°(€€€€€€€€€€€ô(€€€€€€€ô(€€€€€€€¥˜É•Á±…•µ•¹Ñ}½½­¥”¥Ì¹½Ð9½¹”è(€€€€€€€€€€€Í•±˜¹}Í•ÍÍ¥½¹}½½­¥”€ôÉ•Á±…•µ•¹Ñ}½½­¥”(€€€€€€€É•ÑÕÉ¸É•ÍÕ±Ð((€€€…Íå¹Œ‘•˜}…Íå¹}É•…‘}Ñ•±•µ•ÑÉå}¥‘Ì¡Í•±˜¤€´øÍ•ÑmÍÑÉtè(€€€€€€€€ˆˆ‰I•…Í••‘‰½à¥‘•¹Ñ¥™¥•ÉÌ™É½´Ñ¡”…ÕÑ¡•¹Ñ¥…Ñ•MMÍÑÉ•…´¸ˆˆˆ(€€€€€€€¥‘ÌèÍ•ÑmÍÑÉt€ôÍ•Ð ¤(€€€€€€€•áÁ•Ñ•è¥¹Ðð9½¹”€ô9½¹”(€€€€€€€É•Á±…•µ•¹Ñ}½½­¥”èÍÑÈð9½¹”€ô9½¹”(€€€€€€€…Íå¹ŒÝ¥Ñ …Íå¹¥¼¹Ñ¥µ•½ÕÐ ÈÀ¤è(€€€€€€€€€€€…Íå¹ŒÝ¥Ñ Í•±˜¹}Í•ÍÍ¥½¸¹•Ð (€€€€€€€€€€€€€€€Q15QIe}UI0°(€€€€€€€€€€€€€€€¡•…‘•ÉÌõÍ•±˜¹}¡•…‘•ÉÌ ‰Ñ•áÐ½•Ù•¹ÐµÍÑÉ•…´ˆ¤°(€€€€€€€€€€€€€€€…±±½Ý}É•‘¥É•ÑÌõ…±Í”°(€€€€€€€€€€€€¤…ÌÉ•ÍÁ½¹Í”è(€€€€€€€€€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ¥¸MMM%=9}aA%I}MQQUMLè(€€€€€€€€€€€€€€€€€€€É…¥Í”M••‘‰½áM•ÍÍ¥½¹áÁ¥É•‘ÉÉ½È (€€€€€€€€€€€€€€€€€€€€€€€€‰M•ÍÍ¥½¸½½­¥”¥Ì¥¹Ù…±¥½È•áÁ¥É•ˆ(€€€€€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ€„ô€ÈÀÀè(€€€€€€€€€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È (€€€€€€€€€€€€€€€€€€€€€€€˜‰Q•±•µ•ÑÉäÍÑÉ•…´É•ÑÕÉ¹•!QQ@íÉ•ÍÁ½¹Í”¹ÍÑ…ÑÕÍôˆ(€€€€€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€€€€€É•Á±…•µ•¹Ñ}½½­¥”€ôÍ•±˜¹}É•ÍÁ½¹Í•}Í•ÍÍ¥½¹}½½­¥”¡É•ÍÁ½¹Í”¤(€€€€€€€€€€€€€€€…Íå¹Œ™½ÈÉ…Ý}±¥¹”¥¸É•ÍÁ½¹Í”¹½¹Ñ•¹Ðè(€€€€€€€€€€€€€€€€€€€•Ù•¹Ð€ôM••‘‰½á±¥•¹Ð¹}Á…ÉÍ•}ÍÍ•}±¥¹”¡É…Ý}±¥¹”¤(€€€€€€€€€€€€€€€€€€€¥˜•Ù•¹Ð¥Ì9½¹”è(€€€€€€€€€€€€€€€€€€€€€€€½¹Ñ¥¹Õ”(€€€€€€€€€€€€€€€€€€€¥˜•Ù•¹Ð¹•Ð ‰ÑåÁ”ˆ¤€ôô€‰½¹¹•Ñ•ˆè(€€€€€€€€€€€€€€€€€€€€€€€•áÁ•Ñ•€ô¥¹Ð¡•Ù•¹Ð¹•Ð ‰Í••‘‰½á½Õ¹Ðˆ¤½È€À¤(€€€€€€€€€€€€€€€€€€€€€€€¥˜•áÁ•Ñ•€ôô€Àè(€€€€€€€€€€€€€€€€€€€€€€€€€€€‰É•…¬(€€€€€€€€€€€€€€€€€€€¥˜•Ù•¹Ð¹•Ð ‰Í••‘‰½á%ˆ¤¥Ì¹½Ð9½¹”è(€€€€€€€€€€€€€€€€€€€€€€€…¹‘¥‘…Ñ”€ôÍÑÈ¡•Ù•¹Ñl‰Í••‘‰½á%‰t¤(€€€€€€€€€€€€€€€€€€€€€€€ÑÉäè(€€€€€€€€€€€€€€€€€€€€€€€€€€€¥‘Ì¹…‘¡Ù…±¥‘…Ñ•}Í••‘‰½á}¥¡…¹‘¥‘…Ñ”¤¤(€€€€€€€€€€€€€€€€€€€€€€€•á•ÁÐY…±Õ•ÉÉ½Èè(€€€€€€€€€€€€€€€€€€€€€€€€€€€½¹Ñ¥¹Õ”(€€€€€€€€€€€€€€€€€€€¥˜•áÁ•Ñ•¥Ì¹½Ð9½¹”…¹±•¸¡¥‘Ì¤€øô•áÁ•Ñ•è(€€€€€€€€€€€€€€€€€€€€€€€‰É•…¬(€€€€€€€¥˜¥‘Ì…¹É•Á±…•µ•¹Ñ}½½­¥”¥Ì¹½Ð9½¹”è(€€€€€€€€€€€Í•±˜¹}Í•ÍÍ¥½¹}½½­¥”€ôÉ•Á±…•µ•¹Ñ}½½­¥”(€€€€€€€É•ÑÕÉ¸¥‘Ì((€€€…Íå¹Œ‘•˜}…Íå¹}É•…‘}‘…Í¡‰½…É‘}¥‘Ì¡Í•±˜¤€´øÍ•ÑmÍÑÉtè(€€€€€€€€ˆˆ‰¥¹Í••‘‰½à¥‘•¹Ñ¥™¥•ÉÌ¥¸Ñ¡”…ÕÑ¡•¹Ñ¥…Ñ•‘…Í¡‰½…É!Q50¸ˆˆˆ(€€€€€€€…Íå¹ŒÝ¥Ñ Í•±˜¹}Í•ÍÍ¥½¸¹•Ð (€€€€€€€€€€€˜‰í	M}UI1ô½‘…Í¡‰½…Éˆ°(€€€€€€€€€€€¡•…‘•ÉÌõÍ•±˜¹}¡•…‘•ÉÌ ¤°(€€€€€€€€€€€…±±½Ý}É•‘¥É•ÑÌõ…±Í”°(€€€€€€€€¤…ÌÉ•ÍÁ½¹Í”è(€€€€€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ¥¸MMM%=9}aA%I}MQQUMLè(€€€€€€€€€€€€€€€É…¥Í”M••‘‰½áM•ÍÍ¥½¹áÁ¥É•‘ÉÉ½È ‰M•ÍÍ¥½¸½½­¥”¥Ì¥¹Ù…±¥½È•áÁ¥É•ˆ¤(€€€€€€€€€€€¥˜É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ€„ô€ÈÀÀè(€€€€€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È¡˜‰…Í¡‰½…ÉÉ•ÑÕÉ¹•!QQ@íÉ•ÍÁ½¹Í”¹ÍÑ…ÑÕÍôˆ¤(€€€€€€€€€€€É•Á±…•µ•¹Ñ}½½­¥”€ôÍ•±˜¹}É•ÍÁ½¹Í•}Í•ÍÍ¥½¹}½½­¥”¡É•ÍÁ½¹Í”¤(€€€€€€€€€€€¡Ñµ°€ô…Ý…¥ÐÉ•ÍÁ½¹Í”¹Ñ•áÐ ¤((€€€€€€€¹½Éµ…±¥é•‘}¡Ñµ°€ô¡Ñµ°¹É•Á±…” qpˆœ°€œˆœ¤(€€€€€€€…¹‘¥‘…Ñ•Ì€ôÍ•Ð¡É”¹™¥¹‘…±°¡Èœ‰Í••‘‰½á%‰qÌ¨éqÌ¨ˆ¡q¬¤ˆœ°¹½Éµ…±¥é•‘}¡Ñµ°¤¤(€€€€€€€…¹‘¥‘…Ñ•Ì¹ÕÁ‘…Ñ”¡É”¹™¥¹‘…±°¡Èˆ½‘…Í¡‰½…É½Í••‘‰½á•Ì¼¡q¬¤ˆ°¹½Éµ…±¥é•‘}¡Ñµ°¤¤(€€€€€€€¥‘ÌèÍ•ÑmÍÑÉt€ôÍ•Ð ¤(€€€€€€€™½È…¹‘¥‘…Ñ”¥¸…¹‘¥‘…Ñ•Ìè(€€€€€€€€€€€ÑÉäè(€€€€€€€€€€€€€€€¥‘Ì¹…‘¡Ù…±¥‘…Ñ•}Í••‘‰½á}¥¡…¹‘¥‘…Ñ”¤¤(€€€€€€€€€€€•á•ÁÐY…±Õ•ÉÉ½Èè(€€€€€€€€€€€€€€€½¹Ñ¥¹Õ”(€€€€€€€¥˜¥‘Ì…¹É•Á±…•µ•¹Ñ}½½­¥”¥Ì¹½Ð9½¹”è(€€€€€€€€€€€Í•±˜¹}Í•ÍÍ¥½¹}½½­¥”€ôÉ•Á±…•µ•¹Ñ}½½­¥”(€€€€€€€É•ÑÕÉ¸¥‘Ì((€€€‘•˜}¡•…‘•ÉÌ¡Í•±˜°…•ÁÐèÍÑÈ€ô€‰Ñ•áÐ½¡Ñµ°ˆ¤€´ø‘¥ÑmÍÑÈ°ÍÑÉtè(€€€€€€€€ˆˆ‰I•ÑÕÉ¸¡•…‘•ÉÌ™½È…¸…ÕÑ¡•¹Ñ¥…Ñ•‰É½ÝÍ•ÈµÍ•ÍÍ¥½¸É•ÅÕ•ÍÐ¸ˆˆˆ(€€€€€€€É•ÑÕÉ¸ì(€€€€€€€€€€€€‰½½­¥”ˆè˜‰Í•ÍÍ¥½¹}¥õíÍ•±˜¹}Í•ÍÍ¥½¹}½½­¥•ôˆ°(€€€€€€€€€€€€‰UÍ•Èµ•¹ÐˆèUMI}9P°(€€€€€€€€€€€€‰•ÁÐˆè…•ÁÐ°(€€€€€€€ô((€€€ÍÑ…Ñ¥µ•Ñ¡½(€€€‘•˜}É•ÍÁ½¹Í•}Í•ÍÍ¥½¹}½½­¥” (€€€€€€€É•ÍÁ½¹Í”è…¥½¡ÑÑÀ¹±¥•¹ÑI•ÍÁ½¹Í”°(€€€€¤€´øÍÑÈð9½¹”è(€€€€€€€€ˆˆ‰I•…„É½Ñ…Ñ•Í•ÍÍ¥½¹}¥½¹±ä™É½´…¸…ÕÑ¡•¹Ñ¥…Ñ•Í¥Ñ”É•ÍÁ½¹Í”¸ˆˆˆ(€€€€€€€¥˜ÕÉ±Á…ÉÍ”¡ÍÑÈ¡É•ÍÁ½¹Í”¹ÕÉ°¤¤¹¡½ÍÑ¹…µ”€„ô€‰ÝÝÜ¹Í••‘‰½á•Ì¹Œˆè(€€€€€€€€€€€É•ÑÕÉ¸9½¹”(€€€€€€€Í•ÍÍ¥½¹}½½­¥”€ôÉ•ÍÁ½¹Í”¹½½­¥•Ì¹•Ð ‰Í•ÍÍ¥½¹}¥ˆ¤(€€€€€€€¥˜Í•ÍÍ¥½¹}½½­¥”¥Ì9½¹”è(€€€€€€€€€€€É•ÑÕÉ¸9½¹”(€€€€€€€µ…á}…”€ôÍ•ÍÍ¥½¹}½½­¥•l‰µ…àµ…”‰t(€€€€€€€¥˜µ…á}…”è(€€€€€€€€€€€ÑÉäè(€€€€€€€€€€€€€€€¥˜¥¹Ð¡µ…á}…”¤€ðô€Àè(€€€€€€€€€€€€€€€€€€€É•ÑÕÉ¸9½¹”(€€€€€€€€€€€•á•ÁÐY…±Õ•ÉÉ½Èè(€€€€€€€€€€€€€€€É•ÑÕÉ¸9½¹”(€€€€€€€•áÁ¥É•Ì€ôÍ•ÍÍ¥½¹}½½­¥•l‰•áÁ¥É•Ì‰t(€€€€€€€¥˜•áÁ¥É•Ìè(€€€€€€€€€€€ÑÉäè(€€€€€€€€€€€€€€€•áÁ¥É•Í}…Ð€ôÁ…ÉÍ•‘…Ñ•}Ñ½}‘…Ñ•Ñ¥µ”¡•áÁ¥É•Ì¤(€€€€€€€€€€€€€€€¥˜•áÁ¥É•Í}…Ð¹Ñé¥¹™¼¥Ì9½¹”è(€€€€€€€€€€€€€€€€€€€•áÁ¥É•Í}…Ð€ô•áÁ¥É•Í}…Ð¹É•Á±…”¡Ñé¥¹™¼õÑ¥µ•é½¹”¹ÕÑŒ¤(€€€€€€€€€€€€€€€¥˜•áÁ¥É•Í}…Ð€ðô‘…Ñ•Ñ¥µ”¹¹½Ü¡Ñ¥µ•é½¹”¹ÕÑŒ¤è(€€€€€€€€€€€€€€€€€€€É•ÑÕÉ¸9½¹”(€€€€€€€€€€€•á•ÁÐ€¡QåÁ•ÉÉ½È°Y…±Õ•ÉÉ½È°=Ù•É™±½ÝÉÉ½È¤è(€€€€€€€€€€€€€€€É•ÑÕÉ¸9½¹”(€€€€€€€ÑÉäè(€€€€€€€€€€€É•ÑÕÉ¸Ù…±¥‘…Ñ•}Í•ÍÍ¥½¹}½½­¥”¡Í•ÍÍ¥½¹}½½­¥”¹Ù…±Õ”¤(€€€€€€€•á•ÁÐY…±Õ•ÉÉ½Èè(€€€€€€€€€€€É•ÑÕÉ¸9½¹”((€€€ÍÑ…Ñ¥µ•Ñ¡½(€€€‘•˜}±½½­Í}±¥­•}…ÕÑ¡•¹Ñ¥…Ñ¥½¹}Á…”¡¡Ñµ°èÍÑÈ¤€´ø‰½½°è(€€€€€€€€ˆˆ‰I•ÑÕÉ¸Ý¡•Ñ¡•È„ÍÕ•ÍÍ™Õ°!QQ@Á…”¥Ì…ÑÕ…±±ä„±½¥¸ÍÉ••¸¸ˆˆˆ(€€€€€€€±½Ý•É}¡Ñµ°€ô¡Ñµ°¹±½Ý•È ¤(€€€€€€€¡…Í}±½¥¹}™½É´€ô€ˆñ™½É´ˆ¥¸±½Ý•É}¡Ñµ°…¹€ (€€€€€€€€€€€€ˆ½±½¥¸µ…Ñ¥½¹Ì¼ˆ¥¸±½Ý•É}¡Ñµ°(€€€€€€€€€€€½È€¹…µ”ô‰Á…ÍÍÝ½Éˆœ¥¸±½Ý•É}¡Ñµ°(€€€€€€€€€€€½È€‰¹…µ”ôÁ…ÍÍÝ½Éœˆ¥¸±½Ý•É}¡Ñµ°(€€€€€€€€¤(€€€€€€€¡…Í}‰É½ÝÍ•É}¡…±±•¹”€ô…¹ä (€€€€€€€€€€€µ…É­•È¥¸±½Ý•É}¡Ñµ°™½Èµ…É­•È¥¸€ ‰˜µÑÕÉ¹ÍÑ¥±”ˆ°€‰˜µ¡°´ˆ¤(€€€€€€€€¤(€€€€€€€É•ÑÕÉ¸¡…Í}±½¥¹}™½É´½È¡…Í}‰É½ÝÍ•É}¡…±±•¹”((€€€ÍÑ…Ñ¥µ•Ñ¡½(€€€‘•˜}•áÑÉ…Ñ}¹Õµ‰•È¡¡Ñµ°èÍÑÈ°­•äèÍÑÈ¤€´øÍÑÈè(€€€€€€€µ…Ñ €ôÉ”¹Í•…É  (€€€€€€€€€€€É˜qp‰íÉ”¹•Í…Á”¡­•ä¥õqpˆè¡q¬ üép¹q¬¤ü¤œ°(€€€€€€€€€€€¡Ñµ°°(€€€€€€€€¤(€€€€€€€¥˜¹½Ðµ…Ñ è(€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È¡˜‰5¥ÍÍ¥¹œ‘…Í¡‰½…ÉÙ…±Õ”èí­•åôˆ¤(€€€€€€€É•ÑÕÉ¸µ…Ñ ¹É½ÕÀ Ä¤((€€€ÍÑ…Ñ¥µ•Ñ¡½(€€€‘•˜}•áÑÉ…Ñ}Ñ…‰±•}Ù…±Õ”¡¡Ñµ°èÍÑÈ°±…‰•°èÍÑÈ¤€´øÍÑÈè(€€€€€€€Á…ÑÑ•É¸€ô€ (€€€€€€€€€€€É˜qp‰¡¥±‘É•¹qpˆéqp‰íÉ”¹•Í…Á”¡±…‰•°¥õqpˆœ(€€€€€€€€€€€É˜œ¹íìÀ°ÄÐÀÁõôýqp‰¡¥±‘É•¹qpˆéqpˆ¡myqp‰t¬¥qpˆœ(€€€€€€€€¤(€€€€€€€µ…Ñ €ôÉ”¹Í•…É ¡Á…ÑÑ•É¸°¡Ñµ°¤(€€€€€€€¥˜¹½Ðµ…Ñ è(€€€€€€€€€€€É…¥Í”M••‘‰½á…Ñ…ÉÉ½È¡˜‰5¥ÍÍ¥¹œ‘…Í¡‰½…É™¥•±èí±…‰•±ôˆ¤(€€€€€€€É•ÑÕÉ¸µ…Ñ ¹É½ÕÀ Ä¤((€€€±…ÍÍµ•Ñ¡½(€€€‘•˜}•áÑÉ…Ñ}½ÁÑ¥½¹…±}Ñ…‰±•}Ù…±Õ”¡±Ì°¡Ñµ°èÍÑÈ°±…‰•°èÍÑÈ¤€´øÍÑÈð9½¹”è(€€€€€€€ÑÉäè(€€€€€€€€€€€É•ÑÕÉ¸±Ì¹}•áÑÉ…Ñ}Ñ…‰±•}Ù…±Õ”¡¡Ñµ°°±…‰•°¤(€€€€€€€•á•ÁÐM••‘‰½á…Ñ…ÉÉ½Èè(€€€€€€€€€€€É•ÑÕÉ¸9½¹”(()±…ÍÌ!å‰É¥‘M••‘‰½á±¥•¹Ðè(€€€€ˆˆ‰UÍ”„Í…Ù•½½­¥”™¥ÉÍÐ…¹É•¹•Ü¥Ð½¹”Ý¥Ñ …½Õ¹ÐÉ•‘•¹Ñ¥…±Ì¸ˆˆˆ((€€€‘•˜}}¥¹¥Ñ}| (€€€€€€€Í•±˜°(€€€€€€€Í•ÍÍ¥½¸è…¥½¡ÑÑÀ¹±¥•¹ÑM•ÍÍ¥½¸°(€€€€€€€Í••‘‰½á}¥èÍÑÈ°(€€€€€€€ÕÍ•É¹…µ”èÍÑÈð9½¹”°(€€€€€€€Á…ÍÍÝ½ÉèÍÑÈð9½¹”°(€€€€€€€Í•ÍÍ¥½¹}½½­¥”èÍÑÈð9½¹”°(€€€€¤€´ø9½¹”è(€€€€€€€Í•±˜¹}Í•ÍÍ¥½¸€ôÍ•ÍÍ¥½¸(€€€€€€€Í•±˜¹}Í••‘‰½á}¥€ôÙ…±¥‘…Ñ•}Í••‘‰½á}¥¡Í••‘‰½á}¥¤(€€€€€€€Í•±˜¹}ÕÍ•É¹…µ”€ôÕÍ•É¹…µ”¹ÍÑÉ¥À ¤¥˜ÕÍ•É¹…µ”•±Í”9½¹”(€€€€€€€Í•±˜¹}Á…ÍÍÝ½É€ôÁ…ÍÍÝ½É¥˜Á…ÍÍÝ½É•±Í”9½¹”(€€€€€€€Í•±˜¹}½½­¥•}±¥•¹Ð€ô€ (€€€€€€€€€€€M•ÍÍ¥½¹½½­¥•M••‘‰½á±¥•¹Ð (€€€€€€€€€€€€€€€Í•ÍÍ¥½¸°(€€€€€€€€€€€€€€€Í•±˜¹}Í••‘‰½á}¥°(€€€€€€€€€€€€€€€Í•ÍÍ¥½¹}½½­¥”°(€€€€€€€€€€€€¤(€€€€€€€€€€€¥˜Í•ÍÍ¥½¹}½½­¥”(€€€€€€€€€€€•±Í”9½¹”(€€€€€€€€¤(€€€€€€€Í•±˜¹}É•‘•¹Ñ¥…±}±¥•¹Ð€ô€ (€€€€€€€€€€€M••‘‰½á±¥•¹Ð (€€€€€€€€€€€€€€€Í•ÍÍ¥½¸°(€€€€€€€€€€€€€€€Í•±˜¹}Í••‘‰½á}¥°(€€€€€€€€€€€€€€€Í•±˜¹}ÕÍ•É¹…µ”°(€€€€€€€€€€€€€€€Í•±˜¹}Á…ÍÍÝ½É°(€€€€€€€€€€€€¤(€€€€€€€€€€€¥˜Í•±˜¹}ÕÍ•É¹…µ”…¹Í•±˜¹}Á…ÍÍÝ½É(€€€€€€€€€€€•±Í”9½¹”(€€€€€€€€¤(€€€€€€€Í•±˜¹}É•¹•Ý…±}±½¬€ô…Íå¹¥¼¹1½¬ ¤((€€€ÁÉ½Á•ÉÑä(€€€‘•˜Í•ÍÍ¥½¹}½½­¥”¡Í•±˜¤€´øÍÑÈð9½¹”è(€€€€€€€€ˆˆ‰I•ÑÕÉ¸Ñ¡”µ½ÍÐÉ••¹ÐÉ…ÜÍ•ÍÍ¥½¹}¥Ù…±Õ”¸ˆˆˆ(€€€€€€€¥˜Í•±˜¹}½½­¥•}±¥•¹Ð¥Ì¹½Ð9½¹”è(€€€€€€€€€€€É•ÑÕÉ¸Í•±˜¹}½½­¥•}±¥•¹Ð¹Í•ÍÍ¥½¹}½½­¥”(€€€€€€€¥˜Í•±˜¹}É•‘•¹Ñ¥…±}±¥•¹Ð¥Ì¹½Ð9½¹”è(€€€€€€€€€€€É•ÑÕÉ¸Í•±˜¹}É•‘•¹Ñ¥…±}±¥•¹Ð¹Í•ÍÍ¥½¹}½½­¥”(€€€€€€€É•ÑÕÉ¸9½¹”((€€€…Íå¹Œ‘•˜…Íå¹}Ù…±¥‘…Ñ•}É•‘•¹Ñ¥…±Ì¡Í•±˜¤€´ø9½¹”è(€€€€€€€€ˆˆ‰Y…±¥‘…Ñ”…Ð±•…ÍÐ½¹”½¹™¥ÕÉ•…ÕÑ¡•¹Ñ¥…Ñ¥½¸µ•Ñ¡½¸ˆˆˆ(€€€€€€€…Ý…¥ÐÍ•±˜¹…Íå¹}•Ñ}‘…Ñ„ ¤((€€€…Íå¹Œ‘•˜…Íå¹}•Ñ}‘…Ñ„¡Í•±˜¤€´ø‘¥ÑmÍÑÈ°¹åtè(€€€€€€€€ˆˆ‰•Ñ ‘…Ñ„…¹É•¹•Ü½¹±ä„•¹Õ¥¹•±ä•áÁ¥É•‰É½ÝÍ•ÈÍ•ÍÍ¥½¸¸ˆˆˆ(€€€€€€€¥˜Í•±˜¹}½½­¥•}±¥•¹Ð¥Ì9½¹”è(€€€€€€€€€€€¥˜Í•±˜¹}É•‘•¹Ñ¥…±}±¥•¹Ð¥Ì9½¹”è(€€€€€€€€€€€€€€€É…¥Í”M••‘‰½áÕÑ¡•¹Ñ¥…Ñ¥½¹ÉÉ½È (€€€€€€€€€€€€€€€€€€€€‰½Õ¹ÐÉ•‘•¹Ñ¥…±Ì½È„Í•ÍÍ¥½¸½½­¥”…É”É•ÅÕ¥É•ˆ(€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€…Íå¹ŒÝ¥Ñ Í•±˜¹}É•¹•Ý…±}±½¬è(€€€€€€€€€€€€€€€¥˜Í•±˜¹}½½­¥•}±¥•¹Ð¥Ì¹½Ð9½¹”è(€€€€€€€€€€€€€€€€€€€É•ÑÕÉ¸…Ý…¥ÐÍ•±˜¹}½½­¥•}±¥•¹Ð¹…Íå¹}•Ñ}‘…Ñ„ ¤(€€€€€€€€€€€€€€€É•ÑÕÉ¸…Ý…¥ÐÍ•±˜¹}…Íå¹}•Ñ}Ý¥Ñ¡}É•‘•¹Ñ¥…±Ì ¤((€€€€€€€•áÁ¥É•‘}½½­¥”€ôÍ•±˜¹}½½­¥•}±¥•¹Ð¹Í•ÍÍ¥½¹}½½­¥”(€€€€€€€ÑÉäè(€€€€€€€€€€€É•ÑÕÉ¸…Ý…¥ÐÍ•±˜¹}½½­¥•}±¥•¹Ð¹…Íå¹}•Ñ}‘…Ñ„ ¤(€€€€€€€•á•ÁÐM••‘‰½áM•ÍÍ¥½¹áÁ¥É•‘ÉÉ½Èè(€€€€€€€€€€€¥˜Í•±˜¹}É•‘•¹Ñ¥…±}±¥•¹Ð¥Ì9½¹”è(€€€€€€€€€€€€€€€É…¥Í”((€€€€€€€…Íå¹ŒÝ¥Ñ Í•±˜¹}É•¹•Ý…±}±½¬è(€€€€€€€€€€€¥˜€ (€€€€€€€€€€€€€€€Í•±˜¹}½½­¥•}±¥•¹Ð¥Ì¹½Ð9½¹”(€€€€€€€€€€€€€€€…¹Í•±˜¹}½½­¥•}±¥•¹Ð¹Í•ÍÍ¥½¹}½½­¥”€„ô•áÁ¥É•‘}½½­¥”(€€€€€€€€€€€€¤è(€€€€€€€€€€€€€€€É•ÑÕÉ¸…Ý…¥ÐÍ•±˜¹}½½­¥•}±¥•¹Ð¹…Íå¹}•Ñ}‘…Ñ„ ¤(€€€€€€€€€€€É•ÑÕÉ¸…Ý…¥ÐÍ•±˜¹}…Íå¹}•Ñ}Ý¥Ñ¡}É•‘•¹Ñ¥…±Ì ¤((€€€…Íå¹Œ‘•˜}…Íå¹}•Ñ}Ý¥Ñ¡}É•‘•¹Ñ¥…±Ì¡Í•±˜¤€´ø‘¥ÑmÍÑÈ°¹åtè(€€€€€€€€ˆˆ‰A•É™½É´½¹”É•‘•¹Ñ¥…°µ‰…­•ÕÁ‘…Ñ”…¹…‘½ÁÐ¥ÑÌ¹•Ü½½­¥”¸ˆˆˆ(€€€€€€€¥˜Í•±˜¹}É•‘•¹Ñ¥…±}±¥•¹Ð¥Ì9½¹”è(€€€€€€€€€€€É…¥Í”M••‘‰½áÕÑ¡•¹Ñ¥…Ñ¥½¹ÉÉ½È (€€€€€€€€€€€€€€€€‰½Õ¹ÐÉ•‘•¹Ñ¥…±Ì…É”É•ÅÕ¥É•Ñ¼É•¹•ÜÑ¡”Í•ÍÍ¥½¸ˆ(€€€€€€€€€€€€¤(€€€€€€€…Ý…¥ÐÍ•±˜¹}É•‘•¹Ñ¥…±}±¥•¹Ð¹…Íå¹}•Ñ}‘…Ñ„ ¤(€€€€€€€Í•ÍÍ¥½¹}½½­¥”€ôÍ•±˜¹}É•‘•¹Ñ¥…±}±¥•¹Ð¹Í•ÍÍ¥½¹}½½­¥”(€€€€€€€¥˜Í•ÍÍ¥½¹}½½­¥”¥Ì9½¹”è(€€€€€€€€€€€É…¥Í”M••‘‰½áÕÑ¡•¹Ñ¥…Ñ¥½¹ÉÉ½È (€€€€€€€€€€€€€€€€‰M••‘‰½á•Ì¹Œ‘¥¹½ÐÁÉ½Ù¥‘”…¸…ÕÑ¡•¹Ñ¥…Ñ•Í•ÍÍ¥½¸ˆ(€€€€€€€€€€€€¤(€€€€€€€Í•±˜¹}½½­¥•}±¥•¹Ð€ôM•ÍÍ¥½¹½½­¥•M••‘‰½á±¥•¹Ð (€€€€€€€€€€€Í•±˜¹}Í•ÍÍ¥½¸°(€€€€€€€€€€€Í•±˜¹}Í••‘‰½á}¥°(€€€€€€€€€€€Í•ÍÍ¥½¹}½½­¥”°(€€€€€€€€¤(€€€€€€€É•ÑÕÉ¸…Ý…¥ÐÍ•±˜¹}½½­¥•}±¥•¹Ð¹…Íå¹}•Ñ}‘…Ñ„ ¤(()Í••‘‰½á}±¥•¹Ð€ôM••‘‰½á±¥•¹Ð(
+        """Request one login page while following only trusted redirects."""
+        current_method = method
+        current_url = _safe_login_url(url)
+        current_data = form_data
+
+        for redirect_count in range(MAX_LOGIN_REDIRECTS + 1):
+            async with session.request(
+                current_method,
+                current_url,
+                data=current_data,
+                allow_redirects=False,
+            ) as response:
+                status = response.status
+                response_url = str(response.url)
+                content_type = response.headers.get("Content-Type")
+                if status not in AUTH_REDIRECT_STATUSES:
+                    return (
+                        status,
+                        response_url,
+                        await response.text(),
+                        content_type,
+                    )
+
+                location = response.headers.get("Location")
+                if not location:
+                    raise SeedboxDataError(
+                        "Authentication redirect did not provide a destination"
+                    )
+                if redirect_count >= MAX_LOGIN_REDIRECTS:
+                    raise SeedboxDataError("Too many authentication redirects")
+
+                destination = _safe_login_url(urljoin(response_url, unescape(location)))
+                if current_method == "POST" and status in (307, 308):
+                    raise SeedboxDataError(
+                        "Unsafe authentication redirect was rejected"
+                    )
+                if status == 303 or (current_method == "POST" and status in (301, 302)):
+                    current_method = "GET"
+                    current_data = None
+                current_url = destination
+
+        raise SeedboxDataError("Too many authentication redirects")
+
+    def _parse_and_log_login_page(
+        self,
+        page_text: str,
+        page_url: str,
+        status: int,
+        content_type: str | None,
+        stage: str,
+    ) -> _LoginFormParser:
+        """Parse and safely log the structure of one authentication page."""
+        parser = _LoginFormParser()
+        parser.feed(page_text)
+
+        def safe_text(value: str | None) -> str | None:
+            if value is None:
+                return None
+            cleaned = value
+            for secret in (self._username, self._password, self._seedbox_id):
+                if secret:
+                    cleaned = re.sub(
+                        re.escape(secret),
+                        "<redacted>",
+                        cleaned,
+                        flags=re.IGNORECASE,
+                    )
+            cleaned = re.sub(
+                r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b",
+                "<redacted-email>",
+                cleaned,
+                flags=re.IGNORECASE,
+            )
+            cleaned = re.sub(
+                r"\b[A-Za-z0-9_-]{24,}\b",
+                "<redacted-token>",
+                cleaned,
+            )
+            return " ".join(cleaned.split())[:200]
+
+        def safe_url(value: str | None) -> str | None:
+            if not value:
+                return None
+            try:
+                parsed = urlparse(urljoin(page_url, unescape(value)))
+                hostname = parsed.hostname or ""
+                if parsed.port:
+                    hostname = f"{hostname}:{parsed.port}"
+            except ValueError:
+                return "<invalid-url>"
+            return parsed._replace(
+                netloc=hostname,
+                path=safe_text(parsed.path) or "",
+                params="",
+                query="",
+                fragment="",
+            ).geturl()
+
+        forms = [
+            {
+                "action": safe_url(action),
+                "fields": sorted(
+                    (
+                        safe_text(name),
+                        safe_text(field_type),
+                    )
+                    for name, field_type in field_types.items()
+                ),
+            }
+            for action, field_types in parser.forms
+        ]
+        lower_page = page_text.lower()
+        keywords = {
+            "keycloak": "keycloak" in lower_page,
+            "cloudflare": "cloudflare" in lower_page,
+            "javascript": "javascript" in lower_page,
+        }
+        _LOGGER.warning(
+            "Seedboxes.cc login diagnostic: stage=%s status=%s "
+            "final_url=%s content_type=%s title=%s forms=%s keywords=%s",
+            stage,
+            status,
+            safe_url(page_url),
+            safe_text(content_type),
+            safe_text(parser.title),
+            forms,
+            keywords,
+        )
+        return parser
+
+    @staticmethod
+    def _read_session_cookie(cookie_jar: aiohttp.CookieJar) -> str | None:
+        """Return the authenticated Seedboxes.cc session cookie value."""
+        cookies = cookie_jar.filter_cookies(URL(BASE_URL))
+        session_cookie = cookies.get("session_id")
+        if session_cookie is None or not session_cookie.value:
+            return None
+        try:
+            return validate_session_cookie(session_cookie.value)
+        except ValueError:
+            return None
+
+    def _headers(self) -> dict[str, str]:
+        if self._session_cookie is None:
+            raise SeedboxAuthenticationError("No authenticated session is available")
+        return {
+            "Cookie": f"session_id={self._session_cookie}",
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+        }
+
+    def _invalidate_session(self) -> None:
+        """Forget the current authenticated cookie set."""
+        self._session_cookie = None
+
+    async def _async_fetch_seedbox(self, seedbox_id: str) -> dict[str, Any]:
+        """Fetch one seedbox from the JSON endpoint."""
+        url = f"{BASE_URL}/api/seedbox/{seedbox_id}"
+        async with self._session.get(
+            url, headers=self._headers(), allow_redirects=False
+        ) as response:
+            if response.status in SESSION_EXPIRED_STATUSES:
+                self._invalidate_session()
+                raise SeedboxSessionExpiredError("Session is invalid or expired")
+            if response.status == 404:
+                raise SeedboxAuthenticationError(
+                    "Seedbox is not available for this account"
+                )
+            if response.status != 200:
+                raise SeedboxDataError(f"Seedbox API returned HTTP {response.status}")
+            payload = await response.json(content_type=None)
+        if not payload.get("success") or not isinstance(payload.get("data"), dict):
+            raise SeedboxDataError("Seedbox API returned an invalid response")
+        return payload["data"]
+
+    async def _async_read_telemetry_ids(self) -> set[str]:
+        """Read seedbox identifiers from the SSE stream."""
+        ids: set[str] = set()
+        expected: int | None = None
+        async with asyncio.timeout(20):
+            async with self._session.get(
+                TELEMETRY_URL,
+                headers={**self._headers(), "Accept": "text/event-stream"},
+                allow_redirects=False,
+            ) as response:
+                self._check_stream_response(response)
+                async for raw_line in response.content:
+                    event = self._parse_sse_line(raw_line)
+                    if event is None:
+                        continue
+                    if event.get("type") == "connected":
+                        expected = int(event.get("seedboxCount") or 0)
+                    if event.get("seedboxId") is not None:
+                        try:
+                            ids.add(validate_seedbox_id(str(event["seedboxId"])))
+                        except ValueError:
+                            continue
+                    if expected is not None and expected > 0 and len(ids) >= expected:
+                        break
+        return ids
+
+    async def _async_read_telemetry_sample(self, seedbox_id: str) -> dict[str, Any]:
+        """Read a current disk-space sample for one seedbox."""
+        result: dict[str, Any] = {}
+        async with asyncio.timeout(20):
+            async with self._session.get(
+                TELEMETRY_URL,
+                headers={**self._headers(), "Accept": "text/event-stream"},
+                allow_redirects=False,
+            ) as response:
+                self._check_stream_response(response)
+                async for raw_line in response.content:
+                    event = self._parse_sse_line(raw_line)
+                    if event is None or str(event.get("seedboxId", "")) != seedbox_id:
+                        continue
+                    result["status"] = event.get("status")
+                    data = event.get("data") or {}
+                    if data.get("type") == "diskspace" and data.get("metric") == "used":
+                        result["disk_used_bytes"] = float(data.get("value") or 0)
+                        break
+        if "disk_used_bytes" not in result:
+            raise SeedboxDataError("No disk-space telemetry was received")
+        return result
+
+    def _check_stream_response(self, response: aiohttp.ClientResponse) -> None:
+        if response.status in SESSION_EXPIRED_STATUSES:
+            self._invalidate_session()
+            raise SeedboxSessionExpiredError("Session is invalid or expired")
+        if response.status != 200:
+            raise SeedboxDataError(f"Telemetry stream returned HTTP {response.status}")
+
+    @staticmethod
+    def _parse_sse_line(raw_line: bytes) -> dict[str, Any] | None:
+        line = raw_line.decode(errors="replace").strip()
+        if not line.startswith("data:"):
+            return None
+        try:
+            payload = json.loads(line[5:].strip())
+        except json.JSONDecodeError:
+            return None
+        return payload if isinstance(payload, dict) else None
+
+
+class SessionCookieSeedboxClient:
+    """Retrieve seedbox information with a browser session cookie."""
+
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        seedbox_id: str | None,
+        session_cookie: str,
+    ) -> None:
+        self._session = session
+        self._seedbox_id = (
+            validate_seedbox_id(seedbox_id) if seedbox_id is not None else None
+        )
+        self._session_cookie = validate_session_cookie(session_cookie)
+
+    @property
+    def session_cookie(self) -> str:
+        """Return the current raw session_id value."""
+        return self._session_cookie
+
+    async def async_validate_credentials(self) -> None:
+        """Validate the browser session and seedbox access."""
+        if self._seedbox_id is None:
+            await self.async_discover_seedboxes()
+        else:
+            await self.async_get_data()
+
+    async def async_discover_seedboxes(self) -> dict[str, dict[str, Any]]:
+        """Discover seedbox IDs available to this browser session."""
+        try:
+            ids = await self._async_read_telemetry_ids()
+        except SeedboxSessionExpiredError:
+            raise
+        except (SeedboxDataError, TimeoutError):
+            ids = set()
+
+        if not ids:
+            ids = await self._async_read_dashboard_ids()
+        if not ids:
+            raise SeedboxDiscoveryError(
+                "No seedbox ID could be discovered from this session"
+            )
+        return {seedbox_id: {} for seedbox_id in sorted(ids)}
+
+    async def async_get_data(self) -> dict[str, Any]:
+        """Fetch and parse the authenticated dashboard page."""
+        if self._seedbox_id is None:
+            raise SeedboxDataError("No seedbox is selected")
+        url = f"{BASE_URL}/dashboard/seedboxes/{self._seedbox_id}"
+
+        async with self._session.get(
+            url, headers=self._headers(), allow_redirects=False
+        ) as response:
+            if response.status in SESSION_EXPIRED_STATUSES:
+                raise SeedboxSessionExpiredError("Session cookie is invalid or expired")
+            if response.status == 404:
+                raise SeedboxAuthenticationError(
+                    "The requested seedbox is not available in this session"
+                )
+            if response.status != 200:
+                raise SeedboxDataError(f"Dashboard returned HTTP {response.status}")
+            replacement_cookie = self._response_session_cookie(response)
+            html = await response.text()
+
+        if f'\\"seedboxId\\":\\"{self._seedbox_id}\\"' not in html:
+            if self._looks_like_authentication_page(html):
+                raise SeedboxSessionExpiredError("Session cookie is invalid or expired")
+            raise SeedboxDataError(
+                "Dashboard response did not contain the selected seedbox"
+            )
+
+        disk_size = float(self._extract_number(html, "diskSpaceLimit"))
+        traffic_raw = float(self._extract_number(html, "currentMonthTraffic"))
+        metrics = re.findall(
+            r'\\"diskspace\\":(\d+),\\"traffic\\":(\d+)',
+            html,
+        )
+        if not metrics:
+            raise SeedboxDataError("No telemetry metrics found in dashboard page")
+
+        disk_used_mb = float(metrics[-1][0])
+        disk_used_gb = round(disk_used_mb / 1000, 2)
+        disk_free_gb = round(max(disk_size - disk_used_gb, 0), 2)
+        disk_used_pct = round((disk_used_gb / disk_size) * 100, 2) if disk_size else 0
+
+        result = {
+            "data": {
+                NAME_DISK_QUOTA_FREE: disk_free_gb,
+                NAME_DISK_QUOTA_USED: disk_used_gb,
+                NAME_DISK_QUOTA_USED_PCT: disk_used_pct,
+                NAME_MONTHLY_TRAFFIC: round(traffic_raw / 1024, 2),
+                NAME_DISK_SIZE: disk_size,
+                NAME_IP_ADDRESS: self._extract_table_value(html, "Server IP"),
+                NAME_TORRENT_CLIENT: self._extract_optional_table_value(
+                    html, "Torrent Client"
+                ),
+                NAME_STATUS: self._extract_table_value(html, "Status"),
+            }
+        }
+        if replacement_cookie is not None:
+            self._session_cookie = replacement_cookie
+        return result
+
+    async def _async_read_telemetry_ids(self) -> set[str]:
+        """Read seedbox identifiers from the authenticated SSE stream."""
+        ids: set[str] = set()
+        expected: int | None = None
+        replacement_cookie: str | None = None
+        async with asyncio.timeout(20):
+            async with self._session.get(
+                TELEMETRY_URL,
+                headers=self._headers("text/event-stream"),
+                allow_redirects=False,
+            ) as response:
+                if response.status in SESSION_EXPIRED_STATUSES:
+                    raise SeedboxSessionExpiredError(
+                        "Session cookie is invalid or expired"
+                    )
+                if response.status != 200:
+                    raise SeedboxDataError(
+                        f"Telemetry stream returned HTTP {response.status}"
+                    )
+                replacement_cookie = self._response_session_cookie(response)
+                async for raw_line in response.content:
+                    event = SeedboxClient._parse_sse_line(raw_line)
+                    if event is None:
+                        continue
+                    if event.get("type") == "connected":
+                        expected = int(event.get("seedboxCount") or 0)
+                        if expected == 0:
+                            break
+                    if event.get("seedboxId") is not None:
+                        candidate = str(event["seedboxId"])
+                        try:
+                            ids.add(validate_seedbox_id(candidate))
+                        except ValueError:
+                            continue
+                    if expected is not None and len(ids) >= expected:
+                        break
+        if ids and replacement_cookie is not None:
+            self._session_cookie = replacement_cookie
+        return ids
+
+    async def _async_read_dashboard_ids(self) -> set[str]:
+        """Find seedbox identifiers in the authenticated dashboard HTML."""
+        async with self._session.get(
+            f"{BASE_URL}/dashboard",
+            headers=self._headers(),
+            allow_redirects=False,
+        ) as response:
+            if response.status in SESSION_EXPIRED_STATUSES:
+                raise SeedboxSessionExpiredError("Session cookie is invalid or expired")
+            if response.status != 200:
+                raise SeedboxDataError(f"Dashboard returned HTTP {response.status}")
+            replacement_cookie = self._response_session_cookie(response)
+            html = await response.text()
+
+        normalized_html = html.replace('\\"', '"')
+        candidates = set(re.findall(r'"seedboxId"\s*:\s*"(\d+)"', normalized_html))
+        candidates.update(re.findall(r"/dashboard/seedboxes/(\d+)", normalized_html))
+        ids: set[str] = set()
+        for candidate in candidates:
+            try:
+                ids.add(validate_seedbox_id(candidate))
+            except ValueError:
+                continue
+        if ids and replacement_cookie is not None:
+            self._session_cookie = replacement_cookie
+        return ids
+
+    def _headers(self, accept: str = "text/html") -> dict[str, str]:
+        """Return headers for an authenticated browser-session request."""
+        return {
+            "Cookie": f"session_id={self._session_cookie}",
+            "User-Agent": USER_AGENT,
+            "Accept": accept,
+        }
+
+    @staticmethod
+    def _response_session_cookie(
+        response: aiohttp.ClientResponse,
+    ) -> str | None:
+        """Read a rotated session_id only from an authenticated site response."""
+        if urlparse(str(response.url)).hostname != "www.seedboxes.cc":
+            return None
+        session_cookie = response.cookies.get("session_id")
+        if session_cookie is None:
+            return None
+        max_age = session_cookie["max-age"]
+        if max_age:
+            try:
+                if int(max_age) <= 0:
+                    return None
+            except ValueError:
+                return None
+        expires = session_cookie["expires"]
+        if expires:
+            try:
+                expires_at = parsedate_to_datetime(expires)
+                if expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
+                if expires_at <= datetime.now(timezone.utc):
+                    return None
+            except (TypeError, ValueError, OverflowError):
+                return None
+        try:
+            return validate_session_cookie(session_cookie.value)
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _looks_like_authentication_page(html: str) -> bool:
+        """Return whether a successful HTTP page is actually a login screen."""
+        lower_html = html.lower()
+        has_login_form = "<form" in lower_html and (
+            "/login-actions/" in lower_html
+            or 'name="password"' in lower_html
+            or "name='password'" in lower_html
+        )
+        has_browser_challenge = any(
+            marker in lower_html for marker in ("cf-turnstile", "cf-chl-")
+        )
+        return has_login_form or has_browser_challenge
+
+    @staticmethod
+    def _extract_number(html: str, key: str) -> str:
+        match = re.search(
+            rf'\\"{re.escape(key)}\\":(\d+(?:\.\d+)?)',
+            html,
+        )
+        if not match:
+            raise SeedboxDataError(f"Missing dashboard value: {key}")
+        return match.group(1)
+
+    @staticmethod
+    def _extract_table_value(html: str, label: str) -> str:
+        pattern = (
+            rf'\\"children\\":\\"{re.escape(label)}\\"'
+            rf'.{{0,1400}}?\\"children\\":\\"([^\\"]+)\\"'
+        )
+        match = re.search(pattern, html)
+        if not match:
+            raise SeedboxDataError(f"Missing dashboard field: {label}")
+        return match.group(1)
+
+    @classmethod
+    def _extract_optional_table_value(cls, html: str, label: str) -> str | None:
+        try:
+            return cls._extract_table_value(html, label)
+        except SeedboxDataError:
+            return None
+
+
+class HybridSeedboxClient:
+    """Use a saved cookie first and renew it once with account credentials."""
+
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        seedbox_id: str,
+        username: str | None,
+        password: str | None,
+        session_cookie: str | None,
+    ) -> None:
+        self._session = session
+        self._seedbox_id = validate_seedbox_id(seedbox_id)
+        self._username = username.strip() if username else None
+        self._password = password if password else None
+        self._cookie_client = (
+            SessionCookieSeedboxClient(
+                session,
+                self._seedbox_id,
+                session_cookie,
+            )
+            if session_cookie
+            else None
+        )
+        self._credential_client = (
+            SeedboxClient(
+                session,
+                self._seedbox_id,
+                self._username,
+                self._password,
+            )
+            if self._username and self._password
+            else None
+        )
+        self._renewal_lock = asyncio.Lock()
+
+    @property
+    def session_cookie(self) -> str | None:
+        """Return the most recent raw session_id value."""
+        if self._cookie_client is not None:
+            return self._cookie_client.session_cookie
+        if self._credential_client is not None:
+            return self._credential_client.session_cookie
+        return None
+
+    async def async_validate_credentials(self) -> None:
+        """Validate at least one configured authentication method."""
+        await self.async_get_data()
+
+    async def async_get_data(self) -> dict[str, Any]:
+        """Fetch data and renew only a genuinely expired browser session."""
+        if self._cookie_client is None:
+            if self._credential_client is None:
+                raise SeedboxAuthenticationError(
+                    "Account credentials or a session cookie are required"
+                )
+            async with self._renewal_lock:
+                if self._cookie_client is not None:
+                    return await self._cookie_client.async_get_data()
+                return await self._async_get_with_credentials()
+
+        expired_cookie = self._cookie_client.session_cookie
+        try:
+            return await self._cookie_client.async_get_data()
+        except SeedboxSessionExpiredError:
+            if self._credential_client is None:
+                raise
+
+        async with self._renewal_lock:
+            if (
+                self._cookie_client is not None
+                and self._cookie_client.session_cookie != expired_cookie
+            ):
+                return await self._cookie_client.async_get_data()
+            return await self._async_get_with_credentials()
+
+    async def _async_get_with_credentials(self) -> dict[str, Any]:
+        """Perform one credential-backed update and adopt its new cookie."""
+        if self._credential_client is None:
+            raise SeedboxAuthenticationError(
+                "Account credentials are required to renew the session"
+            )
+        await self._credential_client.async_get_data()
+        session_cookie = self._credential_client.session_cookie
+        if session_cookie is None:
+            raise SeedboxAuthenticationError(
+                "Seedboxes.cc did not provide an authenticated session"
+            )
+        self._cookie_client = SessionCookieSeedboxClient(
+            self._session,
+            self._seedbox_id,
+            session_cookie,
+        )
+        return await self._cookie_client.async_get_data()
+
+
+seedbox_client = SeedboxClient
