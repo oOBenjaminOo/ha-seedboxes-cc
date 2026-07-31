@@ -4,7 +4,7 @@ from homeassistant.const import Platform
 
 NAME = "Seedboxes.cc"
 DOMAIN = "seedboxes_cc"
-VERSION = "2.0.1-beta.2"
+VERSION = "2.0.1-beta.3"
 
 CONFIG_ENTRY_VERSION = 5
 CONFIG_ENTRY_MINOR_VERSION = 2
@@ -28,6 +28,8 @@ NAME_DISK_QUOTA_USED_PCT = "Disk Quota Used Percent"
 NAME_MONTHLY_TRAFFIC = "Monthly Traffic"
 NAME_DISK_SIZE = "Disk Size"
 NAME_IP_ADDRESS = "IP Address"
+NAME_NEXT_DUE = "Next Due"
+NAME_PRICE = "Price"
 
 SENSOR_UNITS = {
     NAME_DISK_QUOTA_FREE: "GB",
@@ -35,6 +37,7 @@ SENSOR_UNITS = {
     NAME_DISK_QUOTA_USED_PCT: "%",
     NAME_MONTHLY_TRAFFIC: "GB",
     NAME_DISK_SIZE: "GB",
+    NAME_PRICE: "EUR",
 }
 
 SENSOR_ICONS = {
@@ -44,6 +47,8 @@ SENSOR_ICONS = {
     NAME_DISK_QUOTA_USED_PCT: "mdi:harddisk",
     NAME_MONTHLY_TRAFFIC: "mdi:upload-network",
     NAME_DISK_SIZE: "mdi:harddisk",
+    NAME_NEXT_DUE: "mdi:calendar-clock",
+    NAME_PRICE: "mdi:currency-eur",
 }
 
 STARTUP_MESSAGE = f"""

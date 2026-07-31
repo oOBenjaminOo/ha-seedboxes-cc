@@ -92,6 +92,12 @@
       },
       "ip_address": {
         "name": "IP address"
+      },
+      "next_due": {
+        "name": "Next due date"
+      },
+      "price": {
+        "name": "Price"
       }
     }
   }

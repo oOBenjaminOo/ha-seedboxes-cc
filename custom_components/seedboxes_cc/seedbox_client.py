@@ -6,7 +6,7 @@ import asyncio
 import json
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
 from html import unescape
 from html.parser import HTMLParser
@@ -23,6 +23,8 @@ from .const import (
     NAME_DISK_SIZE,
     NAME_IP_ADDRESS,
     NAME_MONTHLY_TRAFFIC,
+    NAME_NEXT_DUE,
+    NAME_PRICE,
     NAME_STATUS,
 )
 
@@ -57,6 +59,61 @@ class SeedboxDiscoveryError(SeedboxDataError):
 
 class SeedboxBrowserVerificationRequired(SeedboxDataError):
     """Raised when browser verification prevents automatic authentication."""
+
+
+def _billing_value(details: dict[str, Any], *keys: str) -> Any:
+    """Return the first billing value exposed by the API response."""
+    containers = (
+        details,
+        details.get("product") or {},
+        details.get("package") or {},
+    )
+    for container in containers:
+        for key in keys:
+            value = container.get(key)
+            if value not in (None, ""):
+                return value
+    return None
+
+
+def _parse_next_due(value: Any) -> date | None:
+    """Normalize a Seedboxes.cc billing date for a Home Assistant date sensor."""
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if value is None:
+        return None
+
+    text = str(value).strip()
+    for date_format in ("%B %d, %Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S"):
+        try:
+            return (
+                datetime.strptime(text[:19], date_format)
+                .replace(tzinfo=timezone.utc)
+                .date()
+            )
+        except ValueError:
+            continue
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).date()
+    except ValueError:
+        return None
+
+
+def _parse_price(value: Any) -> float | None:
+    """Normalize a Seedboxes.cc price while discarding its billing period."""
+    if isinstance(value, dict):
+        value = value.get("amount") or value.get("value") or value.get("price")
+    if isinstance(value, (int, float)):
+        return round(float(value), 2)
+    if value is None:
+        return None
+
+    match = re.search(r"\d+(?:[.,]\d+)?", str(value).replace(" ", ""))
+    if match is None:
+        return None
+    return round(float(match.group(0).replace(",", ".")), 2)
 
 
 def validate_seedbox_id(seedbox_id: str) -> str:
@@ -229,6 +286,25 @@ class SeedboxClient:
         disk_used_pct = round((disk_used / disk_size) * 100, 2) if disk_size else 0
         server = details.get("server") or {}
         product = details.get("product") or {}
+        next_due = _parse_next_due(
+            _billing_value(
+                details,
+                "next_due",
+                "next_due_date",
+                "nextDue",
+                "due_date",
+                "expires_at",
+            )
+        )
+        price = _parse_price(
+            _billing_value(
+                details,
+                "price",
+                "recurring_price",
+                "renewal_price",
+                "amount",
+            )
+        )
 
         return {
             "data": {
@@ -238,6 +314,8 @@ class SeedboxClient:
                 NAME_MONTHLY_TRAFFIC: float(details.get("monthly_traffic") or 0) * 1000,
                 NAME_DISK_SIZE: disk_size,
                 NAME_IP_ADDRESS: server.get("ip"),
+                NAME_NEXT_DUE: next_due,
+                NAME_PRICE: price,
                 NAME_STATUS: product.get("status")
                 or telemetry.get("status")
                 or "Unknown",
@@ -720,6 +798,10 @@ class SessionCookieSeedboxClient:
                 NAME_MONTHLY_TRAFFIC: round(traffic_raw / 1024, 2),
                 NAME_DISK_SIZE: disk_size,
                 NAME_IP_ADDRESS: self._extract_table_value(html, "Server IP"),
+                NAME_NEXT_DUE: _parse_next_due(
+                    self._extract_optional_table_value(html, "Next Due")
+                ),
+                NAME_PRICE: self._extract_dashboard_price(html),
                 NAME_STATUS: self._extract_table_value(html, "Status"),
             }
         }
@@ -875,6 +957,27 @@ class SessionCookieSeedboxClient:
             return cls._extract_table_value(html, label)
         except SeedboxDataError:
             return None
+
+    @classmethod
+    def _extract_dashboard_price(cls, html: str) -> float | None:
+        """Extract the numeric price from the dashboard billing row."""
+        direct_value = cls._extract_optional_table_value(html, "Price")
+        parsed_value = _parse_price(direct_value)
+        if parsed_value is not None:
+            return parsed_value
+
+        patterns = (
+            (
+                r'\\"children\\":\\"Price\\".{0,1400}?'
+                r'\\"children\\":\[\\"€\\",\\"(\d+(?:[.,]\d+)?)\\"'
+            ),
+            r">Price</td>\s*<td[^>]*>\s*€\s*(\d+(?:[.,]\d+)?)",
+        )
+        for pattern in patterns:
+            match = re.search(pattern, html)
+            if match is not None:
+                return _parse_price(match.group(1))
+        return None
 
 
 class HybridSeedboxClient:

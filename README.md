@@ -23,7 +23,8 @@ The integration provides sensors for:
 - free and used disk space;
 - disk usage percentage and capacity;
 - monthly traffic allowance;
-- server IP address.
+- server IP address;
+- next payment date and price.
 
 ## Installation
 

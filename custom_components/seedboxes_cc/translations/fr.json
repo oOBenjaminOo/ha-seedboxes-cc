@@ -92,6 +92,12 @@
       },
       "ip_address": {
         "name": "Adresse IP"
+      },
+      "next_due": {
+        "name": "Prochaine échéance"
+      },
+      "price": {
+        "name": "Prix"
       }
     }
   }

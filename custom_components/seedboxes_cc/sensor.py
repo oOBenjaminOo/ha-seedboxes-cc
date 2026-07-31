@@ -26,6 +26,8 @@ from .const import (
     NAME_DISK_SIZE,
     NAME_IP_ADDRESS,
     NAME_MONTHLY_TRAFFIC,
+    NAME_NEXT_DUE,
+    NAME_PRICE,
     NAME_STATUS,
 )
 from .coordinator import SeedboxDataUpdateCoordinator
@@ -93,6 +95,22 @@ SENSORS: tuple[SeedboxSensorEntityDescription, ...] = (
         translation_key="ip_address",
         data_key=NAME_IP_ADDRESS,
         icon="mdi:ip-network",
+    ),
+    SeedboxSensorEntityDescription(
+        key="next_due",
+        translation_key="next_due",
+        data_key=NAME_NEXT_DUE,
+        device_class=SensorDeviceClass.DATE,
+        icon="mdi:calendar-clock",
+    ),
+    SeedboxSensorEntityDescription(
+        key="price",
+        translation_key="price",
+        data_key=NAME_PRICE,
+        native_unit_of_measurement="EUR",
+        device_class=SensorDeviceClass.MONETARY,
+        suggested_display_precision=2,
+        icon="mdi:currency-eur",
     ),
 )
 

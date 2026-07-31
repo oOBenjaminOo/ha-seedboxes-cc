@@ -17,6 +17,7 @@ Some examples of the type of information provided:
 - disk quota and usage;
 - monthly traffic;
 - server IP address;
+- next payment date and price;
 - seedbox status.
 
 **This component will set up the following platforms.**

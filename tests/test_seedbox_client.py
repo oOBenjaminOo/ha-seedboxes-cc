@@ -6,6 +6,7 @@ import asyncio
 import importlib.util
 import sys
 import types
+from datetime import date
 from http.cookies import SimpleCookie
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,8 @@ SENSOR_NAMES = (
     "NAME_DISK_SIZE",
     "NAME_IP_ADDRESS",
     "NAME_MONTHLY_TRAFFIC",
+    "NAME_NEXT_DUE",
+    "NAME_PRICE",
     "NAME_STATUS",
 )
 
@@ -131,7 +134,26 @@ def dashboard_html(seedbox_id: str = "80414") -> str:
         r"\"currentMonthTraffic\":2048"
         r"\"diskspace\":100000,\"traffic\":1"
         r"\"children\":\"Server IP\"x\"children\":\"10.0.0.1\""
+        r"\"children\":\"Next Due\"x\"children\":\"April 2, 2030\""
+        r"\"children\":\"Price\"x\"children\":[\"€\",\"99.95\"]"
         r"\"children\":\"Status\"x\"children\":\"Active\""
+    )
+
+
+def test_billing_parsers_accept_dashboard_and_api_formats(client_module):
+    """Billing values are normalized without retaining presentation text."""
+    rendered_price = (
+        '<td class="label">Price</td>'
+        '<td class="value">€88,50<span>/ 12 months</span></td>'
+    )
+
+    assert client_module._parse_next_due("2031-06-15T00:00:00Z") == date(2031, 6, 15)
+    assert client_module._parse_price({"amount": "42.10"}) == 42.10
+    assert (
+        client_module.SessionCookieSeedboxClient._extract_dashboard_price(
+            rendered_price
+        )
+        == 88.50
     )
 
 
@@ -159,6 +181,8 @@ async def test_valid_cookie_does_not_login(client_module, monkeypatch):
     result = await client.async_get_data()
 
     assert result["data"]["NAME_STATUS"] == "Active"
+    assert result["data"]["NAME_NEXT_DUE"] == date(2030, 4, 2)
+    assert result["data"]["NAME_PRICE"] == 99.95
     assert CredentialClient.calls == 0
 
 
