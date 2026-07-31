@@ -12,7 +12,12 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DOMAIN
-from .seedbox_client import SeedboxAuthenticationError, SeedboxClient, SeedboxDataError
+from .seedbox_client import (
+    SeedboxAuthenticationError,
+    SeedboxClient,
+    SeedboxDataError,
+    SessionCookieSeedboxClient,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,8 +29,9 @@ class SeedboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self,
         hass: HomeAssistant,
         seedbox_id: str,
-        username: str,
-        password: str,
+        username: str | None,
+        password: str | None,
+        session_cookie: str | None,
         scan_period: timedelta,
     ) -> None:
         """Initialize the coordinator."""
@@ -35,12 +41,23 @@ class SeedboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             name=DOMAIN,
             update_interval=scan_period,
         )
-        self.api = SeedboxClient(
-            async_get_clientsession(hass),
-            seedbox_id,
-            username,
-            password,
-        )
+        if session_cookie:
+            self.api = SessionCookieSeedboxClient(
+                async_get_clientsession(hass),
+                seedbox_id,
+                session_cookie,
+            )
+        else:
+            if not username or not password:
+                raise ValueError(
+                    "Seedboxes.cc credentials or session cookie are required"
+                )
+            self.api = SeedboxClient(
+                async_get_clientsession(hass),
+                seedbox_id,
+                username,
+                password,
+            )
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch the latest Seedboxes.cc data."""
