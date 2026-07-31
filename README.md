@@ -69,11 +69,32 @@ if the menu is not visible.
 3. Search for **Seedboxes.cc**.
 4. Enter the email address or username and password for the Seedboxes.cc account.
 
+> [!IMPORTANT]
+> Automatic username/password sign-in does not support two-factor
+> authentication (2FA/MFA). For reliable automatic setup and seedbox discovery,
+> 2FA must be disabled on the Seedboxes.cc account. The integration cannot
+> request or submit a one-time verification code.
+>
+> Disabling 2FA reduces account security. If the browser-session fallback is
+> offered, a `session_id` obtained after completing 2FA in the browser uses an
+> already-authenticated session, but it still has to be copied manually.
+
 The integration first attempts to sign in and discover the seedboxes attached to
 the account. If one seedbox is found, it is added automatically. If several are
 found, Home Assistant asks which one to add.
 
 No YAML configuration or API key is required.
+
+When automatic sign-in succeeds, the integration discovers the seedbox ID and
+obtains its own session cookie automatically; neither value needs to be entered.
+If Turnstile blocks automatic sign-in, Home Assistant cannot access cookies
+stored in the browser, so both the seedbox ID and the `session_id` value must
+currently be entered manually.
+
+The seedbox ID could be discovered from a valid session in a future version, but
+that discovery is not implemented in the browser-session fallback today. The
+cookie itself must remain manual while the login requires an interactive browser
+verification.
 
 ## Browser verification and Turnstile
 
@@ -196,6 +217,29 @@ cookies, usernames, or passwords. Review any log before sharing it publicly.
 Saisissez d’abord l’adresse e-mail ou le nom d’utilisateur et le mot de passe du
 compte Seedboxes.cc. L’intégration découvre automatiquement les seedboxes du
 compte.
+
+> [!IMPORTANT]
+> La connexion automatique par identifiant et mot de passe ne prend pas en
+> charge la double authentification (2FA/MFA). Pour une configuration et une
+> découverte automatiques fiables, la 2FA doit être désactivée sur le compte
+> Seedboxes.cc. L’intégration ne peut ni demander ni envoyer un code de
+> vérification à usage unique.
+>
+> Désactiver la 2FA réduit la sécurité du compte. Si le repli par session
+> navigateur est proposé, un `session_id` récupéré après avoir validé la 2FA
+> dans le navigateur correspond à une session déjà authentifiée, mais sa copie
+> reste manuelle.
+
+Lorsque la connexion automatique réussit, l’intégration découvre elle-même
+l’identifiant de la seedbox et obtient son propre cookie de session : vous
+n’avez à fournir aucune de ces deux valeurs. Si Turnstile bloque cette connexion,
+Home Assistant ne peut pas lire les cookies enregistrés dans votre navigateur ;
+l’identifiant de la seedbox et la valeur de `session_id` doivent donc être
+saisis manuellement dans la version actuelle.
+
+L’identifiant pourrait être découvert automatiquement à partir d’une session
+valide dans une future version. En revanche, le cookie restera nécessaire tant
+que la connexion impose une vérification interactive dans un navigateur.
 
 Si Turnstile bloque la connexion automatique, Home Assistant demande
 l’identifiant de la seedbox et le cookie `session_id`.
