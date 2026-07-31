@@ -23,8 +23,7 @@ The integration provides sensors for:
 - free and used disk space;
 - disk usage percentage and capacity;
 - monthly traffic allowance;
-- server IP address;
-- torrent client.
+- server IP address.
 
 ## Installation
 

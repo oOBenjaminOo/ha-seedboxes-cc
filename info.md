@@ -17,7 +17,7 @@ Some examples of the type of information provided:
 - disk quota and usage;
 - monthly traffic;
 - server IP address;
-- torrent client and seedbox status.
+- seedbox status.
 
 **This component will set up the following platforms.**
 

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from collections import OrderedDict
 from typing import Any
 
 import voluptuous as vol
@@ -18,16 +17,13 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import (
-    CONF_SCAN_PERIOD,
     CONF_SEEDBOX_ID,
     CONF_SESSION_COOKIE,
     CONFIG_ENTRY_MINOR_VERSION,
     CONFIG_ENTRY_VERSION,
-    DEFAULT_SCAN_PERIOD,
     DOMAIN,
-    MIN_SCAN_PERIOD,
-    PLATFORMS,
 )
+from .options import build_options_schema
 from .seedbox_client import (
     SeedboxAuthenticationError,
     SeedboxBrowserVerificationRequired,
@@ -418,26 +414,10 @@ class SeedboxOptionsFlowHandler(config_entries.OptionsFlowWithReload):
 
     async def async_step_init(self, user_input=None):
         """Manage the integration options."""
-        return await self.async_step_user(user_input)
-
-    async def async_step_user(self, user_input=None):
-        """Handle options submitted by the user."""
         if user_input is not None:
-            user_input[CONF_SCAN_PERIOD] = max(
-                int(user_input[CONF_SCAN_PERIOD]), MIN_SCAN_PERIOD
-            )
             return self.async_create_entry(title="", data=user_input)
 
-        data_schema = OrderedDict()
-        options = dict(self.config_entry.options)
-        data_schema[
-            vol.Optional(
-                CONF_SCAN_PERIOD,
-                default=options.get(CONF_SCAN_PERIOD, DEFAULT_SCAN_PERIOD),
-            )
-        ] = int
-        for platform in sorted(PLATFORMS, key=str):
-            data_schema[vol.Required(platform, default=options.get(platform, True))] = (
-                bool
-            )
-        return self.async_show_form(step_id="user", data_schema=vol.Schema(data_schema))
+        return self.async_show_form(
+            step_id="init",
+            data_schema=build_options_schema(self.config_entry.options),
+        )

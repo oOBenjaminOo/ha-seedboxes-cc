@@ -62,7 +62,7 @@
   },
   "options": {
     "step": {
-      "user": {
+      "init": {
         "title": "Options Seedboxes.cc",
         "data": {
           "scan_period": "Intervalle de mise à jour (secondes)"
@@ -92,9 +92,6 @@
       },
       "ip_address": {
         "name": "Adresse IP"
-      },
-      "torrent_client": {
-        "name": "Client torrent"
       }
     }
   }

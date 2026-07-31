@@ -24,7 +24,6 @@ from .const import (
     NAME_IP_ADDRESS,
     NAME_MONTHLY_TRAFFIC,
     NAME_STATUS,
-    NAME_TORRENT_CLIENT,
 )
 
 BASE_URL = "https://www.seedboxes.cc"
@@ -239,7 +238,6 @@ class SeedboxClient:
                 NAME_MONTHLY_TRAFFIC: float(details.get("monthly_traffic") or 0) * 1000,
                 NAME_DISK_SIZE: disk_size,
                 NAME_IP_ADDRESS: server.get("ip"),
-                NAME_TORRENT_CLIENT: details.get("torrent_client"),
                 NAME_STATUS: product.get("status")
                 or telemetry.get("status")
                 or "Unknown",
@@ -722,9 +720,6 @@ class SessionCookieSeedboxClient:
                 NAME_MONTHLY_TRAFFIC: round(traffic_raw / 1024, 2),
                 NAME_DISK_SIZE: disk_size,
                 NAME_IP_ADDRESS: self._extract_table_value(html, "Server IP"),
-                NAME_TORRENT_CLIENT: self._extract_optional_table_value(
-                    html, "Torrent Client"
-                ),
                 NAME_STATUS: self._extract_table_value(html, "Status"),
             }
         }

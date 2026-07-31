@@ -22,7 +22,6 @@ SENSOR_NAMES = (
     "NAME_IP_ADDRESS",
     "NAME_MONTHLY_TRAFFIC",
     "NAME_STATUS",
-    "NAME_TORRENT_CLIENT",
 )
 
 
@@ -132,7 +131,6 @@ def dashboard_html(seedbox_id: str = "80414") -> str:
         r"\"currentMonthTraffic\":2048"
         r"\"diskspace\":100000,\"traffic\":1"
         r"\"children\":\"Server IP\"x\"children\":\"10.0.0.1\""
-        r"\"children\":\"Torrent Client\"x\"children\":\"qBittorrent\""
         r"\"children\":\"Status\"x\"children\":\"Active\""
     )
 

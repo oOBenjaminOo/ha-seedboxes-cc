@@ -4,7 +4,7 @@ from homeassistant.const import Platform
 
 NAME = "Seedboxes.cc"
 DOMAIN = "seedboxes_cc"
-VERSION = "2.0.1-beta.1"
+VERSION = "2.0.1-beta.2"
 
 CONFIG_ENTRY_VERSION = 5
 CONFIG_ENTRY_MINOR_VERSION = 2
@@ -28,7 +28,6 @@ NAME_DISK_QUOTA_USED_PCT = "Disk Quota Used Percent"
 NAME_MONTHLY_TRAFFIC = "Monthly Traffic"
 NAME_DISK_SIZE = "Disk Size"
 NAME_IP_ADDRESS = "IP Address"
-NAME_TORRENT_CLIENT = "Torrent Client"
 
 SENSOR_UNITS = {
     NAME_DISK_QUOTA_FREE: "GB",
