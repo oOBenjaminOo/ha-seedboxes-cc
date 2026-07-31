@@ -1,13 +1,13 @@
 """Constants for the Seedboxes.cc integration."""
 
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
+from homeassistant.const import Platform
 
 NAME = "Seedboxes.cc"
 DOMAIN = "seedboxes_cc"
-VERSION = "2.0.0"
+VERSION = "2.0.1-beta.1"
 
 CONFIG_ENTRY_VERSION = 5
-CONFIG_ENTRY_MINOR_VERSION = 1
+CONFIG_ENTRY_MINOR_VERSION = 2
 
 ISSUE_URL = "https://github.com/oOBenjaminOo/ha-seedboxes-cc/issues"
 

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from collections import OrderedDict
 import logging
+from collections import OrderedDict
 from typing import Any
 
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
@@ -15,14 +16,13 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
-import voluptuous as vol
 
 from .const import (
-    CONFIG_ENTRY_MINOR_VERSION,
-    CONFIG_ENTRY_VERSION,
     CONF_SCAN_PERIOD,
     CONF_SEEDBOX_ID,
     CONF_SESSION_COOKIE,
+    CONFIG_ENTRY_MINOR_VERSION,
+    CONFIG_ENTRY_VERSION,
     DEFAULT_SCAN_PERIOD,
     DOMAIN,
     MIN_SCAN_PERIOD,
@@ -33,14 +33,15 @@ from .seedbox_client import (
     SeedboxBrowserVerificationRequired,
     SeedboxClient,
     SeedboxDataError,
+    SeedboxDiscoveryError,
     SessionCookieSeedboxClient,
+    validate_seedbox_id,
+    validate_session_cookie,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-_USERNAME_SELECTOR = TextSelector(
-    TextSelectorConfig(autocomplete="username")
-)
+_USERNAME_SELECTOR = TextSelector(TextSelectorConfig(autocomplete="username"))
 _PASSWORD_SELECTOR = TextSelector(
     TextSelectorConfig(
         type=TextSelectorType.PASSWORD,
@@ -64,6 +65,7 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         self._username: str | None = None
         self._password: str | None = None
+        self._session_cookie: str | None = None
         self._discovered: dict[str, dict[str, Any]] = {}
         self._reauth_entry = None
 
@@ -84,6 +86,7 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     self._password,
                 )
                 self._discovered = await client.async_discover_seedboxes()
+                self._session_cookie = client.session_cookie
             except SeedboxBrowserVerificationRequired:
                 _LOGGER.info(
                     "Seedboxes.cc requires browser verification; "
@@ -96,12 +99,8 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     err,
                 )
                 errors["base"] = "invalid_auth"
-            except (SeedboxDataError, TimeoutError) as err:
-                _LOGGER.error(
-                    "Seedboxes.cc automatic discovery failed: %s",
-                    err,
-                    exc_info=True,
-                )
+            except (SeedboxDataError, TimeoutError):
+                _LOGGER.exception("Seedboxes.cc automatic discovery failed")
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception(
@@ -132,27 +131,31 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_session_cookie(
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.ConfigFlowResult:
-        """Configure access with a browser session cookie."""
+        """Discover seedboxes with a browser session cookie."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            seedbox_id = str(user_input[CONF_SEEDBOX_ID]).strip()
-            session_cookie = str(user_input[CONF_SESSION_COOKIE]).strip()
             try:
+                self._session_cookie = validate_session_cookie(
+                    str(user_input[CONF_SESSION_COOKIE])
+                )
                 client = SessionCookieSeedboxClient(
                     async_get_clientsession(self.hass),
-                    seedbox_id,
-                    session_cookie,
+                    None,
+                    self._session_cookie,
                 )
-                await client.async_validate_credentials()
-            except SeedboxAuthenticationError:
+                self._discovered = await client.async_discover_seedboxes()
+                self._session_cookie = client.session_cookie
+            except (SeedboxAuthenticationError, ValueError):
                 errors["base"] = "invalid_session"
-            except (SeedboxDataError, TimeoutError) as err:
-                _LOGGER.error(
-                    "Seedboxes.cc session validation failed: %s",
+            except SeedboxDiscoveryError as err:
+                _LOGGER.warning(
+                    "Seedboxes.cc could not discover a seedbox from the session: %s",
                     err,
-                    exc_info=True,
                 )
+                return await self.async_step_manual_seedbox()
+            except (SeedboxDataError, TimeoutError):
+                _LOGGER.exception("Seedboxes.cc session validation or discovery failed")
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception(
@@ -160,26 +163,59 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 )
                 errors["base"] = "unknown"
             else:
-                await self.async_set_unique_id(seedbox_id)
-                self._abort_if_unique_id_configured()
-                return self.async_create_entry(
-                    title=f"Seedbox {seedbox_id}",
-                    data={
-                        CONF_SEEDBOX_ID: seedbox_id,
-                        CONF_SESSION_COOKIE: session_cookie,
-                    },
-                )
+                if len(self._discovered) == 1:
+                    return await self._async_create_seedbox_entry(
+                        next(iter(self._discovered))
+                    )
+                return await self.async_step_select_seedbox()
 
         return self.async_show_form(
             step_id="session_cookie",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_SEEDBOX_ID): str,
-                    vol.Required(
-                        CONF_SESSION_COOKIE
-                    ): _SESSION_COOKIE_SELECTOR,
+                    vol.Required(CONF_SESSION_COOKIE): _SESSION_COOKIE_SELECTOR,
                 }
             ),
+            errors=errors,
+        )
+
+    async def async_step_manual_seedbox(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        """Validate a manually supplied seedbox ID as a discovery fallback."""
+        errors: dict[str, str] = {}
+        if self._session_cookie is None:
+            return self.async_abort(reason="discovery_failed")
+
+        if user_input is not None:
+            try:
+                seedbox_id = validate_seedbox_id(str(user_input[CONF_SEEDBOX_ID]))
+                client = SessionCookieSeedboxClient(
+                    async_get_clientsession(self.hass),
+                    seedbox_id,
+                    self._session_cookie,
+                )
+                await client.async_validate_credentials()
+                self._session_cookie = client.session_cookie
+            except ValueError:
+                errors["base"] = "invalid_seedbox_id"
+            except SeedboxAuthenticationError:
+                errors["base"] = "invalid_session"
+            except (SeedboxDataError, TimeoutError):
+                _LOGGER.exception("Seedboxes.cc manual seedbox validation failed")
+                errors["base"] = "cannot_connect"
+            except Exception:
+                _LOGGER.exception(
+                    "Unexpected error while validating a Seedboxes.cc seedbox"
+                )
+                errors["base"] = "unknown"
+            else:
+                self._discovered = {seedbox_id: {}}
+                return await self._async_create_seedbox_entry(seedbox_id)
+
+        return self.async_show_form(
+            step_id="manual_seedbox",
+            data_schema=vol.Schema({vol.Required(CONF_SEEDBOX_ID): str}),
             errors=errors,
         )
 
@@ -187,7 +223,7 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.ConfigFlowResult:
         """Let the user select one seedbox when several are available."""
-        if not self._discovered or self._username is None or self._password is None:
+        if not self._discovered:
             return self.async_abort(reason="discovery_failed")
 
         if user_input is not None:
@@ -209,27 +245,29 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="select_seedbox",
-            data_schema=vol.Schema(
-                {vol.Required(CONF_SEEDBOX_ID): vol.In(choices)}
-            ),
+            data_schema=vol.Schema({vol.Required(CONF_SEEDBOX_ID): vol.In(choices)}),
         )
 
     async def _async_create_seedbox_entry(
         self, seedbox_id: str
     ) -> config_entries.ConfigFlowResult:
         """Create an entry for the selected seedbox."""
+        seedbox_id = validate_seedbox_id(seedbox_id)
         await self.async_set_unique_id(seedbox_id)
         self._abort_if_unique_id_configured()
         details = self._discovered.get(seedbox_id, {})
         server = details.get("server") or {}
         title = details.get("username") or server.get("name") or f"Seedbox {seedbox_id}"
+        data: dict[str, Any] = {CONF_SEEDBOX_ID: seedbox_id}
+        if self._username is not None:
+            data[CONF_USERNAME] = self._username
+        if self._password is not None:
+            data[CONF_PASSWORD] = self._password
+        if self._session_cookie is not None:
+            data[CONF_SESSION_COOKIE] = self._session_cookie
         return self.async_create_entry(
             title=str(title),
-            data={
-                CONF_SEEDBOX_ID: seedbox_id,
-                CONF_USERNAME: self._username,
-                CONF_PASSWORD: self._password,
-            },
+            data=data,
         )
 
     async def async_step_reauth(
@@ -239,8 +277,11 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self._reauth_entry = self.hass.config_entries.async_get_entry(
             self.context["entry_id"]
         )
-        if CONF_SESSION_COOKIE in entry_data:
-            return await self.async_step_reauth_session_cookie()
+        if self._reauth_entry is None:
+            return self.async_abort(reason="reauth_failed")
+        self._username = self._reauth_entry.data.get(CONF_USERNAME)
+        self._password = self._reauth_entry.data.get(CONF_PASSWORD)
+        self._session_cookie = self._reauth_entry.data.get(CONF_SESSION_COOKIE)
         return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(
@@ -255,14 +296,14 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         current_username = str(self._reauth_entry.data.get(CONF_USERNAME, ""))
 
         if user_input is not None:
-            username = str(user_input[CONF_USERNAME]).strip()
-            password = str(user_input[CONF_PASSWORD])
+            self._username = str(user_input[CONF_USERNAME]).strip()
+            self._password = str(user_input[CONF_PASSWORD])
             try:
                 client = SeedboxClient(
                     async_get_clientsession(self.hass),
                     seedbox_id,
-                    username,
-                    password,
+                    self._username,
+                    self._password,
                 )
                 await client.async_validate_credentials()
             except SeedboxBrowserVerificationRequired:
@@ -274,12 +315,10 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     err,
                 )
                 errors["base"] = "invalid_auth"
-            except (SeedboxDataError, TimeoutError) as err:
-                _LOGGER.error(
-                    "Seedboxes.cc reauthentication could not validate seedbox %s: %s",
+            except (SeedboxDataError, TimeoutError):
+                _LOGGER.exception(
+                    "Seedboxes.cc reauthentication could not validate seedbox %s",
                     seedbox_id,
-                    err,
-                    exc_info=True,
                 )
                 errors["base"] = "cannot_connect"
             except Exception:
@@ -289,20 +328,16 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 )
                 errors["base"] = "unknown"
             else:
-                self.hass.config_entries.async_update_entry(
+                self._session_cookie = client.session_cookie
+                return self.async_update_reload_and_abort(
                     self._reauth_entry,
-                    data={
-                        **self._reauth_entry.data,
-                        CONF_USERNAME: username,
-                        CONF_PASSWORD: password,
+                    data_updates={
+                        CONF_USERNAME: self._username,
+                        CONF_PASSWORD: self._password,
+                        CONF_SESSION_COOKIE: self._session_cookie,
                     },
-                    version=self.VERSION,
-                    minor_version=self.MINOR_VERSION,
+                    reload_even_if_entry_is_unchanged=False,
                 )
-                await self.hass.config_entries.async_reload(
-                    self._reauth_entry.entry_id
-                )
-                return self.async_abort(reason="reauth_successful")
 
         return self.async_show_form(
             step_id="reauth_confirm",
@@ -328,47 +363,44 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         seedbox_id = str(self._reauth_entry.data[CONF_SEEDBOX_ID])
         if user_input is not None:
-            session_cookie = str(user_input[CONF_SESSION_COOKIE]).strip()
             try:
+                self._session_cookie = validate_session_cookie(
+                    str(user_input[CONF_SESSION_COOKIE])
+                )
                 client = SessionCookieSeedboxClient(
                     async_get_clientsession(self.hass),
                     seedbox_id,
-                    session_cookie,
+                    self._session_cookie,
                 )
                 await client.async_validate_credentials()
-            except SeedboxAuthenticationError:
+                self._session_cookie = client.session_cookie
+            except (SeedboxAuthenticationError, ValueError):
                 errors["base"] = "invalid_session"
             except (SeedboxDataError, TimeoutError):
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception(
-                    "Unexpected error while validating replacement "
-                    "Seedboxes.cc session"
+                    "Unexpected error while validating replacement Seedboxes.cc session"
                 )
                 errors["base"] = "unknown"
             else:
-                self.hass.config_entries.async_update_entry(
+                updates: dict[str, Any] = {
+                    CONF_SESSION_COOKIE: self._session_cookie,
+                }
+                if self._username is not None:
+                    updates[CONF_USERNAME] = self._username
+                if self._password is not None:
+                    updates[CONF_PASSWORD] = self._password
+                return self.async_update_reload_and_abort(
                     self._reauth_entry,
-                    data={
-                        CONF_SEEDBOX_ID: seedbox_id,
-                        CONF_SESSION_COOKIE: session_cookie,
-                    },
-                    version=self.VERSION,
-                    minor_version=self.MINOR_VERSION,
+                    data_updates=updates,
+                    reload_even_if_entry_is_unchanged=False,
                 )
-                await self.hass.config_entries.async_reload(
-                    self._reauth_entry.entry_id
-                )
-                return self.async_abort(reason="reauth_successful")
 
         return self.async_show_form(
             step_id="reauth_session_cookie",
             data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_SESSION_COOKIE
-                    ): _SESSION_COOKIE_SELECTOR
-                }
+                {vol.Required(CONF_SESSION_COOKIE): _SESSION_COOKIE_SELECTOR}
             ),
             errors=errors,
             description_placeholders={"seedbox_id": seedbox_id},
@@ -378,14 +410,11 @@ class SeedboxFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Return the options flow."""
-        return SeedboxOptionsFlowHandler(config_entry)
+        return SeedboxOptionsFlowHandler()
 
 
-class SeedboxOptionsFlowHandler(config_entries.OptionsFlow):
+class SeedboxOptionsFlowHandler(config_entries.OptionsFlowWithReload):
     """Handle Seedboxes.cc options."""
-
-    def __init__(self, config_entry):
-        self.options = dict(config_entry.options)
 
     async def async_step_init(self, user_input=None):
         """Manage the integration options."""
@@ -400,14 +429,15 @@ class SeedboxOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         data_schema = OrderedDict()
+        options = dict(self.config_entry.options)
         data_schema[
             vol.Optional(
                 CONF_SCAN_PERIOD,
-                default=self.options.get(CONF_SCAN_PERIOD, DEFAULT_SCAN_PERIOD),
+                default=options.get(CONF_SCAN_PERIOD, DEFAULT_SCAN_PERIOD),
             )
         ] = int
         for platform in sorted(PLATFORMS, key=str):
-            data_schema[
-                vol.Required(platform, default=self.options.get(platform, True))
-            ] = bool
+            data_schema[vol.Required(platform, default=options.get(platform, True))] = (
+                bool
+            )
         return self.async_show_form(step_id="user", data_schema=vol.Schema(data_schema))

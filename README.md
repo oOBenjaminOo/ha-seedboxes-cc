@@ -88,13 +88,23 @@ No YAML configuration or API key is required.
 When automatic sign-in succeeds, the integration discovers the seedbox ID and
 obtains its own session cookie automatically; neither value needs to be entered.
 If Turnstile blocks automatic sign-in, Home Assistant cannot access cookies
-stored in the browser, so both the seedbox ID and the `session_id` value must
-currently be entered manually.
+stored in the browser, so the `session_id` value must still be copied manually.
+The integration then tries to discover the seedbox ID from that session and asks
+for it only if discovery is not possible.
 
-The seedbox ID could be discovered from a valid session in a future version, but
-that discovery is not implemented in the browser-session fallback today. The
-cookie itself must remain manual while the login requires an interactive browser
-verification.
+The integration keeps the account credentials and the current session cookie in
+the Home Assistant config entry. On a real session expiry, it first tries the
+saved cookie, signs in once with the saved credentials, stores the replacement
+cookie, and continues updating. It does not retry authentication for network,
+server, or data parsing errors. If Turnstile or 2FA blocks the renewal, Home
+Assistant requests a fresh browser cookie instead.
+
+Account credentials are stored by Home Assistant and may be included in Home
+Assistant backups. Protect access to the Home Assistant instance and its backups.
+Entries created by an older release with only a browser cookie become hybrid the
+next time Home Assistant requests reauthentication and collects the account
+credentials; until then, those older entries still require a manual cookie when
+their session expires.
 
 ## Browser verification and Turnstile
 
@@ -102,12 +112,11 @@ Seedboxes.cc may protect its sign-in flow with Turnstile. Home Assistant cannot
 complete an interactive browser verification. When this happens, the integration
 automatically switches to session-cookie authentication.
 
-You will need:
+You will need the **value only** of the `session_id` cookie from an authenticated
+browser. In the uncommon case where automatic discovery from that cookie fails,
+you will also need the seedbox ID.
 
-- the seedbox ID;
-- the **value only** of the `session_id` cookie from an authenticated browser.
-
-### Find the seedbox ID
+### Find the seedbox ID (manual fallback only)
 
 1. Sign in to [Seedboxes.cc](https://www.seedboxes.cc/).
 2. Open the seedbox you want to add.
@@ -151,9 +160,11 @@ session used by Home Assistant.
 > example. If it is exposed, sign out of Seedboxes.cc to revoke it, sign in
 > again, and replace the cookie in Home Assistant.
 
-Session cookies expire. When Home Assistant requests reauthentication, sign in
-again through the browser and repeat the steps above to provide a new
-`session_id` value.
+Session cookies expire. The integration renews them automatically when ordinary
+username/password sign-in remains available. When Home Assistant requests
+reauthentication, automatic renewal was blocked or rejected: sign in again
+through the browser and repeat the steps above to provide a new `session_id`
+value.
 
 ## Updating
 
@@ -234,17 +245,27 @@ Lorsque la connexion automatique réussit, l’intégration découvre elle-même
 l’identifiant de la seedbox et obtient son propre cookie de session : vous
 n’avez à fournir aucune de ces deux valeurs. Si Turnstile bloque cette connexion,
 Home Assistant ne peut pas lire les cookies enregistrés dans votre navigateur ;
-l’identifiant de la seedbox et la valeur de `session_id` doivent donc être
-saisis manuellement dans la version actuelle.
+la valeur de `session_id` doit donc toujours être copiée manuellement.
+L’intégration tente ensuite de découvrir l’identifiant de la seedbox depuis cette
+session et ne le demande que si cette découverte échoue.
 
-L’identifiant pourrait être découvert automatiquement à partir d’une session
-valide dans une future version. En revanche, le cookie restera nécessaire tant
-que la connexion impose une vérification interactive dans un navigateur.
+L’intégration conserve les identifiants du compte et le cookie de session actuel
+dans l’entrée de configuration Home Assistant. Lorsqu’une session expire
+réellement, elle essaie d’abord le cookie enregistré, effectue une seule connexion
+avec les identifiants, enregistre le nouveau cookie et reprend les mises à jour.
+Elle ne relance pas l’authentification pour une panne réseau, une erreur serveur
+ou une erreur de lecture des données. Si Turnstile ou la 2FA bloque le
+renouvellement, Home Assistant demande alors un nouveau cookie du navigateur.
 
-Si Turnstile bloque la connexion automatique, Home Assistant demande
-l’identifiant de la seedbox et le cookie `session_id`.
+Les identifiants du compte sont enregistrés par Home Assistant et peuvent être
+inclus dans ses sauvegardes. Protégez l’accès à Home Assistant et à ses
+sauvegardes.
+Les entrées créées par une ancienne version avec uniquement un cookie navigateur
+deviennent hybrides lors de la prochaine réauthentification, lorsque Home
+Assistant recueille les identifiants du compte. D’ici là, ces anciennes entrées
+demandent encore un cookie manuel à l’expiration de leur session.
 
-### Récupérer l’identifiant de la seedbox
+### Récupérer l’identifiant de la seedbox (repli manuel uniquement)
 
 Connectez-vous à Seedboxes.cc et ouvrez la seedbox concernée. L’identifiant est
 le nombre situé à la fin de l’URL :
@@ -284,8 +305,10 @@ utilisée par Home Assistant.
 > journal. En cas d’exposition, déconnectez-vous de Seedboxes.cc pour la
 > révoquer, reconnectez-vous et fournissez le nouveau cookie à Home Assistant.
 
-Le cookie finit par expirer. Lorsque Home Assistant demande une
-réauthentification, récupérez une nouvelle valeur en répétant cette procédure.
+Le cookie finit par expirer. L’intégration le renouvelle automatiquement tant
+que la connexion habituelle par identifiant et mot de passe reste possible. Si
+Home Assistant demande une réauthentification, ce renouvellement a été bloqué ou
+refusé : récupérez une nouvelle valeur en répétant cette procédure.
 
 ## Support
 

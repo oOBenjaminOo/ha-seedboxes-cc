@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connexion à Seedboxes.cc",
-        "description": "Saisissez les identifiants de votre compte Seedboxes.cc. Si la vérification du navigateur bloque la connexion automatique, l’intégration proposera l’authentification par cookie de session.",
+        "description": "Saisissez les identifiants de votre compte Seedboxes.cc. Ils sont conservés dans Home Assistant afin de renouveler automatiquement une session expirée. Si la vérification du navigateur bloque la connexion, l’intégration demandera un cookie de session du navigateur.",
         "data": {
           "username": "Adresse e-mail ou nom d’utilisateur",
           "password": "Mot de passe"
@@ -26,10 +26,16 @@
       },
       "session_cookie": {
         "title": "Vérification du navigateur requise",
-        "description": "Seedboxes.cc protège désormais la connexion automatique avec Turnstile. Connectez-vous dans un navigateur, puis copiez la valeur du cookie session_id et l’identifiant de la seedbox.",
+        "description": "Seedboxes.cc a bloqué la connexion automatique avec une vérification du navigateur. Connectez-vous dans un navigateur et copiez uniquement la valeur du cookie session_id. L’intégration tentera de découvrir automatiquement l’identifiant de la seedbox.",
         "data": {
-          "seedbox_id": "Identifiant de la seedbox",
           "session_cookie": "Cookie de session (session_id)"
+        }
+      },
+      "manual_seedbox": {
+        "title": "Saisir l’identifiant de la seedbox",
+        "description": "La session est valide, mais l’identifiant de la seedbox n’a pas pu être découvert. Saisissez le nombre affiché à la fin de l’adresse du tableau de bord Seedboxes.cc.",
+        "data": {
+          "seedbox_id": "Identifiant de la seedbox"
         }
       },
       "reauth_session_cookie": {
@@ -44,7 +50,8 @@
       "invalid_auth": "Les identifiants sont invalides ou ce compte n’a pas accès à la seedbox demandée.",
       "cannot_connect": "Impossible de se connecter à Seedboxes.cc, de découvrir une seedbox ou de terminer la procédure de connexion.",
       "unknown": "Erreur inattendue. Consultez les journaux de Home Assistant.",
-      "invalid_session": "Le cookie de session est invalide, a expiré ou ne donne pas accès à cette seedbox."
+      "invalid_session": "Le cookie de session est invalide, a expiré ou ne donne pas accès à cette seedbox.",
+      "invalid_seedbox_id": "L’identifiant de la seedbox doit contenir uniquement des chiffres."
     },
     "abort": {
       "already_configured": "Cette seedbox est déjà configurée.",

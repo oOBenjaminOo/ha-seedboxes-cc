@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryAuthFailed
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 from .const import (
-    CONFIG_ENTRY_MINOR_VERSION,
-    CONFIG_ENTRY_VERSION,
     CONF_SCAN_PERIOD,
     CONF_SEEDBOX_ID,
     CONF_SESSION_COOKIE,
+    CONFIG_ENTRY_MINOR_VERSION,
+    CONFIG_ENTRY_VERSION,
     DEFAULT_SCAN_PERIOD,
     DOMAIN,
     PLATFORMS,
@@ -48,19 +48,12 @@ async def async_migrate_entry(
         return False
 
     data = entry.data
-    has_seedbox_id = bool(
-        str(data.get(CONF_SEEDBOX_ID, "")).strip()
-    )
-    has_session_cookie = bool(
-        str(data.get(CONF_SESSION_COOKIE, "")).strip()
-    )
+    has_seedbox_id = bool(str(data.get(CONF_SEEDBOX_ID, "")).strip())
+    has_session_cookie = bool(str(data.get(CONF_SESSION_COOKIE, "")).strip())
     has_account_credentials = bool(
-        str(data.get(CONF_USERNAME, "")).strip()
-        and data.get(CONF_PASSWORD)
+        str(data.get(CONF_USERNAME, "")).strip() and data.get(CONF_PASSWORD)
     )
-    if not has_seedbox_id or not (
-        has_session_cookie or has_account_credentials
-    ):
+    if not has_seedbox_id or not (has_session_cookie or has_account_credentials):
         _LOGGER.error(
             "Cannot migrate Seedboxes.cc config entry %s because its "
             "authentication data is incomplete; remove and add the "
@@ -105,10 +98,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = SeedboxDataUpdateCoordinator(
         hass,
-        entry.data[CONF_SEEDBOX_ID],
-        username,
-        password,
-        session_cookie,
+        entry,
         scan_period,
     )
     await coordinator.async_config_entry_first_refresh()
@@ -116,7 +106,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
     return True
 
@@ -131,8 +120,3 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.data.pop(DOMAIN)
 
     return unloaded
-
-
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload a Seedboxes.cc config entry."""
-    await hass.config_entries.async_reload(entry.entry_id)

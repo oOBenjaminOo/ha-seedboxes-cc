@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect to Seedboxes.cc",
-        "description": "Enter your Seedboxes.cc account credentials. If browser verification blocks automatic login, the integration will offer session cookie authentication.",
+        "description": "Enter your Seedboxes.cc account credentials. They are kept in Home Assistant so an expired session can be renewed automatically. If browser verification blocks login, the integration will ask for a browser session cookie.",
         "data": {
           "username": "Email address or username",
           "password": "Password"
@@ -26,10 +26,16 @@
       },
       "session_cookie": {
         "title": "Browser verification required",
-        "description": "Seedboxes.cc now protects automatic login with Turnstile. Sign in through a browser, then copy the session_id cookie value and the seedbox ID.",
+        "description": "Seedboxes.cc blocked automatic login with browser verification. Sign in through a browser and copy only the session_id cookie value. The integration will try to discover the seedbox ID automatically.",
         "data": {
-          "seedbox_id": "Seedbox ID",
           "session_cookie": "Session cookie (session_id)"
+        }
+      },
+      "manual_seedbox": {
+        "title": "Enter the seedbox ID",
+        "description": "The session is valid, but the seedbox ID could not be discovered. Enter the number shown at the end of the Seedboxes.cc dashboard URL.",
+        "data": {
+          "seedbox_id": "Seedbox ID"
         }
       },
       "reauth_session_cookie": {
@@ -44,7 +50,8 @@
       "invalid_auth": "The account credentials are invalid or this account cannot access the requested seedbox.",
       "cannot_connect": "Unable to connect to Seedboxes.cc, discover a seedbox, or complete its login flow.",
       "unknown": "Unexpected error. Check the Home Assistant logs.",
-      "invalid_session": "The session cookie is invalid, expired, or cannot access this seedbox."
+      "invalid_session": "The session cookie is invalid, expired, or cannot access this seedbox.",
+      "invalid_seedbox_id": "The seedbox ID must contain only digits."
     },
     "abort": {
       "already_configured": "This seedbox is already configured.",

@@ -9,9 +9,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_SESSION_COOKIE, DOMAIN, NAME_IP_ADDRESS
+from .const import CONF_SEEDBOX_ID, CONF_SESSION_COOKIE, DOMAIN, NAME_IP_ADDRESS
 
-TO_REDACT = {CONF_PASSWORD, CONF_SESSION_COOKIE, CONF_USERNAME}
+TO_REDACT = {
+    CONF_PASSWORD,
+    CONF_SEEDBOX_ID,
+    CONF_SESSION_COOKIE,
+    CONF_USERNAME,
+}
 
 
 async def async_get_config_entry_diagnostics(
@@ -23,7 +28,7 @@ async def async_get_config_entry_diagnostics(
 
     return {
         "config_entry": {
-            "title": entry.title,
+            "title": "**REDACTED**",
             "data": async_redact_data(dict(entry.data), TO_REDACT),
             "options": dict(entry.options),
             "version": entry.version,
