@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connexion à Seedboxes.cc",
-        "description": "Saisissez les identifiants de votre compte Seedboxes.cc. L’intégration se connecte et découvre automatiquement votre seedbox.",
+        "description": "Saisissez les identifiants de votre compte Seedboxes.cc. Si la vérification du navigateur bloque la connexion automatique, l’intégration proposera l’authentification par cookie de session.",
         "data": {
           "username": "Adresse e-mail ou nom d’utilisateur",
           "password": "Mot de passe"
@@ -23,17 +23,33 @@
           "username": "Adresse e-mail ou nom d’utilisateur",
           "password": "Mot de passe"
         }
+      },
+      "session_cookie": {
+        "title": "Vérification du navigateur requise",
+        "description": "Seedboxes.cc protège désormais la connexion automatique avec Turnstile. Connectez-vous dans un navigateur, puis copiez la valeur du cookie session_id et l’identifiant de la seedbox.",
+        "data": {
+          "seedbox_id": "Identifiant de la seedbox",
+          "session_cookie": "Cookie de session (session_id)"
+        }
+      },
+      "reauth_session_cookie": {
+        "title": "Reconnecter Seedboxes.cc avec un cookie",
+        "description": "La connexion automatique de la seedbox {seedbox_id} est bloquée par la vérification du navigateur. Saisissez un nouveau cookie session_id.",
+        "data": {
+          "session_cookie": "Cookie de session (session_id)"
+        }
       }
     },
     "error": {
       "invalid_auth": "Les identifiants sont invalides ou ce compte n’a pas accès à la seedbox demandée.",
       "cannot_connect": "Impossible de se connecter à Seedboxes.cc, de découvrir une seedbox ou de terminer la procédure de connexion.",
-      "unknown": "Erreur inattendue. Consultez les journaux de Home Assistant."
+      "unknown": "Erreur inattendue. Consultez les journaux de Home Assistant.",
+      "invalid_session": "Le cookie de session est invalide, a expiré ou ne donne pas accès à cette seedbox."
     },
     "abort": {
       "already_configured": "Cette seedbox est déjà configurée.",
       "discovery_failed": "La session de découverte a expiré. Recommencez l’ajout de l’intégration.",
-      "reauth_successful": "Les identifiants du compte Seedboxes.cc ont été mis à jour.",
+      "reauth_successful": "L’authentification Seedboxes.cc a été mise à jour.",
       "reauth_failed": "Impossible de retrouver l’entrée d’intégration à réauthentifier."
     }
   },
@@ -49,14 +65,30 @@
   },
   "entity": {
     "sensor": {
-      "status": { "name": "Statut" },
-      "disk_free": { "name": "Espace disque libre" },
-      "disk_used": { "name": "Espace disque utilisé" },
-      "disk_used_percent": { "name": "Occupation du disque" },
-      "monthly_traffic": { "name": "Quota de trafic mensuel" },
-      "disk_size": { "name": "Capacité du disque" },
-      "ip_address": { "name": "Adresse IP" },
-      "torrent_client": { "name": "Client torrent" }
+      "status": {
+        "name": "Statut"
+      },
+      "disk_free": {
+        "name": "Espace disque libre"
+      },
+      "disk_used": {
+        "name": "Espace disque utilisé"
+      },
+      "disk_used_percent": {
+        "name": "Occupation du disque"
+      },
+      "monthly_traffic": {
+        "name": "Quota de trafic mensuel"
+      },
+      "disk_size": {
+        "name": "Capacité du disque"
+      },
+      "ip_address": {
+        "name": "Adresse IP"
+      },
+      "torrent_client": {
+        "name": "Client torrent"
+      }
     }
   }
 }
