@@ -507,7 +507,7 @@ class SessionCookieSeedboxClient:
                 )
             html = await response.text()
 
-        if f'"seedboxId":"{self._seedbox_id}"' not in html:
+        if f'\\\"seedboxId\\\":\\\"{self._seedbox_id}\\\"' not in html:
             raise SeedboxAuthenticationError(
                 "The requested seedbox is not available in this session"
             )
