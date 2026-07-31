@@ -6,12 +6,12 @@ from typing import Any
 
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN
+from .const import CONF_SESSION_COOKIE, DOMAIN, NAME_IP_ADDRESS
 
-TO_REDACT = {CONF_PASSWORD}
+TO_REDACT = {CONF_PASSWORD, CONF_SESSION_COOKIE, CONF_USERNAME}
 
 
 async def async_get_config_entry_diagnostics(
@@ -30,6 +30,9 @@ async def async_get_config_entry_diagnostics(
         },
         "coordinator": {
             "last_update_success": coordinator.last_update_success,
-            "data": coordinator.data,
+            "data": async_redact_data(
+                dict(coordinator.data or {}),
+                {NAME_IP_ADDRESS},
+            ),
         },
     }
