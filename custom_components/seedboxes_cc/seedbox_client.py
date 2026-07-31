@@ -6,6 +6,7 @@ import asyncio
 from html import unescape
 from html.parser import HTMLParser
 import json
+import logging
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
@@ -29,6 +30,8 @@ TELEMETRY_URL = f"{BASE_URL}/api/telemetry/stream-all"
 GATEKEEPER_HOST = "gatekeeper.seedboxes.cc"
 USER_AGENT = "HomeAssistant Seedboxes.cc Integration/2.0"
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class SeedboxAuthenticationError(Exception):
     """Raised when Seedboxes.cc authentication fails."""
@@ -46,13 +49,20 @@ class _LoginFormParser(HTMLParser):
         self.action: str | None = None
         self.fields: dict[str, str] = {}
         self.field_types: dict[str, str] = {}
+        self.forms: list[tuple[str | None, dict[str, str]]] = []
+        self.title: str | None = None
         self._inside_form = False
+        self._inside_title = False
+        self._title_parts: list[str] = []
         self._candidate_action: str | None = None
         self._candidate_fields: dict[str, str] = {}
         self._candidate_types: dict[str, str] = {}
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = dict(attrs)
+        if tag == "title":
+            self._inside_title = True
+            return
         if tag == "form" and not self._inside_form:
             self._inside_form = True
             self._candidate_action = attributes.get("action")
@@ -67,10 +77,20 @@ class _LoginFormParser(HTMLParser):
         self._candidate_fields[name] = attributes.get("value") or ""
         self._candidate_types[name] = (attributes.get("type") or "text").lower()
 
+    def handle_data(self, data: str) -> None:
+        if self._inside_title:
+            self._title_parts.append(data)
+
     def handle_endtag(self, tag: str) -> None:
+        if tag == "title":
+            self._inside_title = False
+            title = " ".join("".join(self._title_parts).split())
+            self.title = title or None
+            return
         if tag != "form" or not self._inside_form:
             return
         action = self._candidate_action or ""
+        self.forms.append((self._candidate_action, dict(self._candidate_types)))
         if self.action is None and "/login-actions/" in unescape(action):
             self.action = self._candidate_action
             self.fields = self._candidate_fields
@@ -179,6 +199,13 @@ class SeedboxClient:
                         )
                     page_text = await response.text()
                     page_url = str(response.url)
+                    parser = self._parse_and_log_login_page(
+                        page_text,
+                        page_url,
+                        response.status,
+                        response.headers.get("Content-Type"),
+                        "initial",
+                    )
 
                 submitted_username = False
                 submitted_password = False
@@ -189,8 +216,6 @@ class SeedboxClient:
                         self._cookie_header = cookie_header
                         return
 
-                    parser = _LoginFormParser()
-                    parser.feed(page_text)
                     if not parser.action:
                         raise SeedboxDataError(
                             "Unable to find the Keycloak authentication form"
@@ -223,6 +248,13 @@ class SeedboxClient:
                     ) as response:
                         page_url = str(response.url)
                         page_text = await response.text()
+                        parser = self._parse_and_log_login_page(
+                            page_text,
+                            page_url,
+                            response.status,
+                            response.headers.get("Content-Type"),
+                            f"authentication-step-{_step + 1}",
+                        )
                         if response.status != 200:
                             raise SeedboxAuthenticationError(
                                 f"Authentication returned HTTP {response.status}"
@@ -240,6 +272,73 @@ class SeedboxClient:
                 raise SeedboxDataError(
                     "Seedboxes.cc did not complete the authentication flow"
                 )
+
+    def _parse_and_log_login_page(
+        self,
+        page_text: str,
+        page_url: str,
+        status: int,
+        content_type: str | None,
+        stage: str,
+    ) -> _LoginFormParser:
+        """Parse and safely log the structure of one authentication page."""
+        parser = _LoginFormParser()
+        parser.feed(page_text)
+
+        def safe_text(value: str | None) -> str | None:
+            if value is None:
+                return None
+            cleaned = " ".join(value.split())[:200]
+            for secret in (self._username, self._password):
+                if secret:
+                    cleaned = cleaned.replace(secret, "<redacted>")
+            return cleaned
+
+        def safe_url(value: str | None) -> str | None:
+            if not value:
+                return None
+            parsed = urlparse(urljoin(page_url, unescape(value)))
+            hostname = parsed.hostname or ""
+            if parsed.port:
+                hostname = f"{hostname}:{parsed.port}"
+            return parsed._replace(
+                netloc=hostname,
+                params="",
+                query="",
+                fragment="",
+            ).geturl()
+
+        forms = [
+            {
+                "action": safe_url(action),
+                "fields": sorted(
+                    (
+                        safe_text(name),
+                        safe_text(field_type),
+                    )
+                    for name, field_type in field_types.items()
+                ),
+            }
+            for action, field_types in parser.forms
+        ]
+        lower_page = page_text.lower()
+        keywords = {
+            "keycloak": "keycloak" in lower_page,
+            "cloudflare": "cloudflare" in lower_page,
+            "javascript": "javascript" in lower_page,
+        }
+        _LOGGER.warning(
+            "Seedboxes.cc login diagnostic: stage=%s status=%s "
+            "final_url=%s content_type=%s title=%s forms=%s keywords=%s",
+            stage,
+            status,
+            safe_url(page_url),
+            safe_text(content_type),
+            safe_text(parser.title),
+            forms,
+            keywords,
+        )
+        return parser
 
     @staticmethod
     def _build_cookie_header(cookie_jar: aiohttp.CookieJar) -> str | None:
