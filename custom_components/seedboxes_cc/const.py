@@ -4,13 +4,14 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 
 NAME = "Seedboxes.cc"
 DOMAIN = "seedboxes_cc"
-VERSION = "2.0.0-beta.6"
+VERSION = "2.0.0-beta.8"
 
 ISSUE_URL = "https://github.com/oOBenjaminOo/ha-seedboxes-cc/issues"
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 CONF_SEEDBOX_ID = "seedbox_id"
+CONF_SESSION_COOKIE = "session_cookie"
 CONF_SCAN_PERIOD = "scan_period"
 
 DEFAULT_SCAN_PERIOD = 900
