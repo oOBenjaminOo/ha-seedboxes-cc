@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from .const import (
     CONF_SCAN_PERIOD,
     CONF_SEEDBOX_ID,
+    CONF_SESSION_COOKIE,
     DEFAULT_SCAN_PERIOD,
     DOMAIN,
     PLATFORMS,
@@ -31,9 +32,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
-    if not username or not password:
+    session_cookie = entry.data.get(CONF_SESSION_COOKIE)
+    if not session_cookie and (not username or not password):
         raise ConfigEntryAuthFailed(
-            "Account credentials are required; reauthenticate the integration"
+            "Account credentials or a session cookie are required; "
+            "reauthenticate the integration"
         )
 
     scan_period = timedelta(
@@ -45,6 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_SEEDBOX_ID],
         username,
         password,
+        session_cookie,
         scan_period,
     )
     await coordinator.async_config_entry_first_refresh()
