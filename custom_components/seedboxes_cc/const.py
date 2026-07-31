@@ -4,7 +4,10 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 
 NAME = "Seedboxes.cc"
 DOMAIN = "seedboxes_cc"
-VERSION = "2.0.0-beta.9"
+VERSION = "2.0.0"
+
+CONFIG_ENTRY_VERSION = 5
+CONFIG_ENTRY_MINOR_VERSION = 1
 
 ISSUE_URL = "https://github.com/oOBenjaminOo/ha-seedboxes-cc/issues"
 
