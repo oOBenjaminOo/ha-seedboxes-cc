@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import DOMAIN
 from .seedbox_client import (
     SeedboxAuthenticationError,
+    SeedboxBrowserVerificationRequired,
     SeedboxClient,
     SeedboxDataError,
     SessionCookieSeedboxClient,
@@ -63,7 +64,10 @@ class SeedboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Fetch the latest Seedboxes.cc data."""
         try:
             result = await self.api.async_get_data()
-        except SeedboxAuthenticationError as err:
+        except (
+            SeedboxAuthenticationError,
+            SeedboxBrowserVerificationRequired,
+        ) as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except SeedboxDataError as err:
             raise UpdateFailed(str(err)) from err
