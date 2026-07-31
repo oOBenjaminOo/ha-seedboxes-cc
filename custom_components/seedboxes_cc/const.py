@@ -4,7 +4,7 @@ from homeassistant.const import Platform
 
 NAME = "Seedboxes.cc"
 DOMAIN = "seedboxes_cc"
-VERSION = "2.0.1-beta.3"
+VERSION = "2.0.1"
 
 CONFIG_ENTRY_VERSION = 5
 CONFIG_ENTRY_MINOR_VERSION = 2
