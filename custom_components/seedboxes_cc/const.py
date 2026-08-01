@@ -4,7 +4,7 @@ from homeassistant.const import Platform
 
 NAME = "Seedboxes.cc"
 DOMAIN = "seedboxes_cc"
-VERSION = "2.0.1-beta.3"
+VERSION = "2.0.2-beta.1"
 
 CONFIG_ENTRY_VERSION = 5
 CONFIG_ENTRY_MINOR_VERSION = 2
@@ -26,6 +26,8 @@ NAME_DISK_QUOTA_FREE = "Disk Quota Free"
 NAME_DISK_QUOTA_USED = "Disk Quota Used"
 NAME_DISK_QUOTA_USED_PCT = "Disk Quota Used Percent"
 NAME_MONTHLY_TRAFFIC = "Monthly Traffic"
+NAME_MONTHLY_TRAFFIC_QUOTA = "Monthly Traffic Quota"
+NAME_MONTHLY_TRAFFIC_USED_PCT = "Monthly Traffic Used Percent"
 NAME_DISK_SIZE = "Disk Size"
 NAME_IP_ADDRESS = "IP Address"
 NAME_NEXT_DUE = "Next Due"
@@ -35,7 +37,9 @@ SENSOR_UNITS = {
     NAME_DISK_QUOTA_FREE: "GB",
     NAME_DISK_QUOTA_USED: "GB",
     NAME_DISK_QUOTA_USED_PCT: "%",
-    NAME_MONTHLY_TRAFFIC: "GB",
+    NAME_MONTHLY_TRAFFIC: "GiB",
+    NAME_MONTHLY_TRAFFIC_QUOTA: "TiB",
+    NAME_MONTHLY_TRAFFIC_USED_PCT: "%",
     NAME_DISK_SIZE: "GB",
     NAME_PRICE: "EUR",
 }
@@ -46,6 +50,8 @@ SENSOR_ICONS = {
     NAME_DISK_QUOTA_USED: "mdi:harddisk",
     NAME_DISK_QUOTA_USED_PCT: "mdi:harddisk",
     NAME_MONTHLY_TRAFFIC: "mdi:upload-network",
+    NAME_MONTHLY_TRAFFIC_QUOTA: "mdi:upload-network-outline",
+    NAME_MONTHLY_TRAFFIC_USED_PCT: "mdi:gauge",
     NAME_DISK_SIZE: "mdi:harddisk",
     NAME_NEXT_DUE: "mdi:calendar-clock",
     NAME_PRICE: "mdi:currency-eur",

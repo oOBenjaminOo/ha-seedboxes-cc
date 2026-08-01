@@ -23,6 +23,8 @@ from .const import (
     NAME_DISK_SIZE,
     NAME_IP_ADDRESS,
     NAME_MONTHLY_TRAFFIC,
+    NAME_MONTHLY_TRAFFIC_QUOTA,
+    NAME_MONTHLY_TRAFFIC_USED_PCT,
     NAME_NEXT_DUE,
     NAME_PRICE,
     NAME_STATUS,
@@ -39,6 +41,9 @@ SESSION_EXPIRED_STATUSES = AUTH_REDIRECT_STATUSES | {401, 403}
 MAX_LOGIN_REDIRECTS = 8
 
 _LOGGER = logging.getLogger(__name__)
+
+MIB_PER_GIB = 1024
+MIB_PER_TIB = 1024 * 1024
 
 
 class SeedboxAuthenticationError(Exception):
@@ -59,6 +64,28 @@ class SeedboxDiscoveryError(SeedboxDataError):
 
 class SeedboxBrowserVerificationRequired(SeedboxDataError):
     """Raised when browser verification prevents automatic authentication."""
+
+
+def _monthly_traffic_values(
+    current_mib: float | None,
+    quota_tib: float | None,
+    *,
+    unlimited: bool,
+) -> tuple[float | None, float | None, float | None]:
+    """Return current GiB, maximum TiB, and quota usage percentage."""
+    current_gib = (
+        round(max(current_mib, 0) / MIB_PER_GIB, 2) if current_mib is not None else None
+    )
+    if unlimited or quota_tib is None or quota_tib <= 0:
+        return current_gib, None, None
+
+    quota_tib = round(quota_tib, 2)
+    used_percent = (
+        round((max(current_mib, 0) / (quota_tib * MIB_PER_TIB)) * 100, 2)
+        if current_mib is not None
+        else None
+    )
+    return current_gib, quota_tib, used_percent
 
 
 def _billing_value(details: dict[str, Any], *keys: str) -> Any:
@@ -114,6 +141,18 @@ def _parse_price(value: Any) -> float | None:
     if match is None:
         return None
     return round(float(match.group(0).replace(",", ".")), 2)
+
+
+def _parse_sse_line(raw_line: bytes) -> dict[str, Any] | None:
+    """Parse one JSON event from a Seedboxes.cc SSE stream."""
+    line = raw_line.decode(errors="replace").strip()
+    if not line.startswith("data:"):
+        return None
+    try:
+        payload = json.loads(line[5:].strip())
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
 
 
 def validate_seedbox_id(seedbox_id: str) -> str:
@@ -286,6 +325,18 @@ class SeedboxClient:
         disk_used_pct = round((disk_used / disk_size) * 100, 2) if disk_size else 0
         server = details.get("server") or {}
         product = details.get("product") or {}
+        traffic_quota_tib = float(details.get("monthly_traffic") or 0)
+        package_module = str(
+            details.get("package_module")
+            or product.get("package_module")
+            or product.get("module")
+            or ""
+        ).lower()
+        _, traffic_quota_tib, _ = _monthly_traffic_values(
+            None,
+            traffic_quota_tib,
+            unlimited=package_module == "docker",
+        )
         next_due = _parse_next_due(
             _billing_value(
                 details,
@@ -311,7 +362,9 @@ class SeedboxClient:
                 NAME_DISK_QUOTA_FREE: disk_free,
                 NAME_DISK_QUOTA_USED: disk_used,
                 NAME_DISK_QUOTA_USED_PCT: disk_used_pct,
-                NAME_MONTHLY_TRAFFIC: float(details.get("monthly_traffic") or 0) * 1000,
+                NAME_MONTHLY_TRAFFIC: None,
+                NAME_MONTHLY_TRAFFIC_QUOTA: traffic_quota_tib,
+                NAME_MONTHLY_TRAFFIC_USED_PCT: None,
                 NAME_DISK_SIZE: disk_size,
                 NAME_IP_ADDRESS: server.get("ip"),
                 NAME_NEXT_DUE: next_due,
@@ -649,7 +702,7 @@ class SeedboxClient:
             ) as response:
                 self._check_stream_response(response)
                 async for raw_line in response.content:
-                    event = self._parse_sse_line(raw_line)
+                    event = _parse_sse_line(raw_line)
                     if event is None:
                         continue
                     if event.get("type") == "connected":
@@ -674,7 +727,7 @@ class SeedboxClient:
             ) as response:
                 self._check_stream_response(response)
                 async for raw_line in response.content:
-                    event = self._parse_sse_line(raw_line)
+                    event = _parse_sse_line(raw_line)
                     if event is None or str(event.get("seedboxId", "")) != seedbox_id:
                         continue
                     result["status"] = event.get("status")
@@ -695,14 +748,8 @@ class SeedboxClient:
 
     @staticmethod
     def _parse_sse_line(raw_line: bytes) -> dict[str, Any] | None:
-        line = raw_line.decode(errors="replace").strip()
-        if not line.startswith("data:"):
-            return None
-        try:
-            payload = json.loads(line[5:].strip())
-        except json.JSONDecodeError:
-            return None
-        return payload if isinstance(payload, dict) else None
+        """Retain the original parser interface for compatibility."""
+        return _parse_sse_line(raw_line)
 
 
 class SessionCookieSeedboxClient:
@@ -775,18 +822,45 @@ class SessionCookieSeedboxClient:
             raise SeedboxDataError(
                 "Dashboard response did not contain the selected seedbox"
             )
-
         disk_size = float(self._extract_number(html, "diskSpaceLimit"))
         traffic_raw = float(self._extract_number(html, "currentMonthTraffic"))
-        metrics = re.findall(
+        package_module = self._extract_optional_string(html, "packageModule")
+        traffic_quota_raw = self._extract_optional_number(html, "monthlyTrafficQuota")
+        traffic_used_gib, traffic_quota_tib, traffic_used_pct = _monthly_traffic_values(
+            traffic_raw,
+            float(traffic_quota_raw) if traffic_quota_raw is not None else None,
+            unlimited=(package_module or "").lower() == "docker",
+        )
+        dashboard_metrics = re.findall(
             r'\\"diskspace\\":(\d+),\\"traffic\\":(\d+)',
             html,
         )
-        if not metrics:
-            raise SeedboxDataError("No telemetry metrics found in dashboard page")
+        ip_address = self._extract_table_value(html, "Server IP")
+        next_due = _parse_next_due(self._extract_optional_table_value(html, "Next Due"))
+        price = self._extract_dashboard_price(html)
+        dashboard_status = self._extract_table_value(html, "Status")
 
-        disk_used_mb = float(metrics[-1][0])
-        disk_used_gb = round(disk_used_mb / 1000, 2)
+        if replacement_cookie is not None:
+            self._session_cookie = replacement_cookie
+
+        try:
+            telemetry = await self._async_read_telemetry_sample()
+        except (SeedboxDataError, TimeoutError) as err:
+            _LOGGER.debug(
+                "Live Seedboxes.cc telemetry unavailable; using dashboard "
+                "snapshot (%s)",
+                type(err).__name__,
+            )
+            telemetry = {}
+
+        if "disk_used_bytes" in telemetry:
+            disk_used_gb = round(float(telemetry["disk_used_bytes"]) / 1_000_000_000, 2)
+        elif dashboard_metrics:
+            disk_used_mb = float(dashboard_metrics[-1][0])
+            disk_used_gb = round(disk_used_mb / 1000, 2)
+        else:
+            raise SeedboxDataError("No current disk-space telemetry was received")
+
         disk_free_gb = round(max(disk_size - disk_used_gb, 0), 2)
         disk_used_pct = round((disk_used_gb / disk_size) * 100, 2) if disk_size else 0
 
@@ -795,18 +869,16 @@ class SessionCookieSeedboxClient:
                 NAME_DISK_QUOTA_FREE: disk_free_gb,
                 NAME_DISK_QUOTA_USED: disk_used_gb,
                 NAME_DISK_QUOTA_USED_PCT: disk_used_pct,
-                NAME_MONTHLY_TRAFFIC: round(traffic_raw / 1024, 2),
+                NAME_MONTHLY_TRAFFIC: traffic_used_gib,
+                NAME_MONTHLY_TRAFFIC_QUOTA: traffic_quota_tib,
+                NAME_MONTHLY_TRAFFIC_USED_PCT: traffic_used_pct,
                 NAME_DISK_SIZE: disk_size,
-                NAME_IP_ADDRESS: self._extract_table_value(html, "Server IP"),
-                NAME_NEXT_DUE: _parse_next_due(
-                    self._extract_optional_table_value(html, "Next Due")
-                ),
-                NAME_PRICE: self._extract_dashboard_price(html),
-                NAME_STATUS: self._extract_table_value(html, "Status"),
+                NAME_IP_ADDRESS: ip_address,
+                NAME_NEXT_DUE: next_due,
+                NAME_PRICE: price,
+                NAME_STATUS: telemetry.get("status") or dashboard_status,
             }
         }
-        if replacement_cookie is not None:
-            self._session_cookie = replacement_cookie
         return result
 
     async def _async_read_telemetry_ids(self) -> set[str]:
@@ -830,7 +902,7 @@ class SessionCookieSeedboxClient:
                     )
                 replacement_cookie = self._response_session_cookie(response)
                 async for raw_line in response.content:
-                    event = SeedboxClient._parse_sse_line(raw_line)
+                    event = _parse_sse_line(raw_line)
                     if event is None:
                         continue
                     if event.get("type") == "connected":
@@ -848,6 +920,44 @@ class SessionCookieSeedboxClient:
         if ids and replacement_cookie is not None:
             self._session_cookie = replacement_cookie
         return ids
+
+    async def _async_read_telemetry_sample(self) -> dict[str, Any]:
+        """Read current disk usage and status from the authenticated SSE stream."""
+        result: dict[str, Any] = {}
+        replacement_cookie: str | None = None
+        async with asyncio.timeout(20):
+            async with self._session.get(
+                TELEMETRY_URL,
+                headers=self._headers("text/event-stream"),
+                allow_redirects=False,
+            ) as response:
+                if response.status in SESSION_EXPIRED_STATUSES:
+                    raise SeedboxSessionExpiredError(
+                        "Session cookie is invalid or expired"
+                    )
+                if response.status != 200:
+                    raise SeedboxDataError(
+                        f"Telemetry stream returned HTTP {response.status}"
+                    )
+                replacement_cookie = self._response_session_cookie(response)
+                async for raw_line in response.content:
+                    event = _parse_sse_line(raw_line)
+                    if (
+                        event is None
+                        or str(event.get("seedboxId", "")) != self._seedbox_id
+                    ):
+                        continue
+                    result["status"] = event.get("status")
+                    data = event.get("data") or {}
+                    if data.get("type") == "diskspace" and data.get("metric") == "used":
+                        result["disk_used_bytes"] = float(data.get("value") or 0)
+                        break
+
+        if "disk_used_bytes" not in result:
+            raise SeedboxDataError("No disk-space telemetry was received")
+        if replacement_cookie is not None:
+            self._session_cookie = replacement_cookie
+        return result
 
     async def _async_read_dashboard_ids(self) -> set[str]:
         """Find seedbox identifiers in the authenticated dashboard HTML."""
@@ -939,6 +1049,24 @@ class SessionCookieSeedboxClient:
         if not match:
             raise SeedboxDataError(f"Missing dashboard value: {key}")
         return match.group(1)
+
+    @staticmethod
+    def _extract_optional_number(html: str, key: str) -> str | None:
+        """Extract an optional numeric dashboard property."""
+        match = re.search(
+            rf'\\"{re.escape(key)}\\":(\d+(?:\.\d+)?)',
+            html,
+        )
+        return match.group(1) if match else None
+
+    @staticmethod
+    def _extract_optional_string(html: str, key: str) -> str | None:
+        """Extract an optional string dashboard property."""
+        match = re.search(
+            rf'\\"{re.escape(key)}\\":\\"([^\\"]*)\\"',
+            html,
+        )
+        return match.group(1) if match else None
 
     @staticmethod
     def _extract_table_value(html: str, label: str) -> str:

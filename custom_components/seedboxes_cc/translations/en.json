@@ -85,7 +85,13 @@
         "name": "Disk usage"
       },
       "monthly_traffic": {
-        "name": "Monthly traffic allowance"
+        "name": "Monthly traffic used"
+      },
+      "monthly_traffic_quota": {
+        "name": "Maximum monthly traffic quota"
+      },
+      "monthly_traffic_used_percent": {
+        "name": "Monthly traffic usage"
       },
       "disk_size": {
         "name": "Disk capacity"

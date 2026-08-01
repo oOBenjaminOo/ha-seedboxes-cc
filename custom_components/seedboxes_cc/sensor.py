@@ -12,7 +12,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfInformation
+from homeassistant.const import UnitOfInformation, UnitOfRatio
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -26,6 +26,8 @@ from .const import (
     NAME_DISK_SIZE,
     NAME_IP_ADDRESS,
     NAME_MONTHLY_TRAFFIC,
+    NAME_MONTHLY_TRAFFIC_QUOTA,
+    NAME_MONTHLY_TRAFFIC_USED_PCT,
     NAME_NEXT_DUE,
     NAME_PRICE,
     NAME_STATUS,
@@ -70,7 +72,7 @@ SENSORS: tuple[SeedboxSensorEntityDescription, ...] = (
         key="disk_used_percent",
         translation_key="disk_used_percent",
         data_key=NAME_DISK_QUOTA_USED_PCT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:chart-donut",
     ),
@@ -78,9 +80,25 @@ SENSORS: tuple[SeedboxSensorEntityDescription, ...] = (
         key="monthly_traffic",
         translation_key="monthly_traffic",
         data_key=NAME_MONTHLY_TRAFFIC,
-        native_unit_of_measurement=UnitOfInformation.GIGABYTES,
+        native_unit_of_measurement=UnitOfInformation.GIBIBYTES,
         device_class=SensorDeviceClass.DATA_SIZE,
         icon="mdi:upload-network",
+    ),
+    SeedboxSensorEntityDescription(
+        key="monthly_traffic_quota",
+        translation_key="monthly_traffic_quota",
+        data_key=NAME_MONTHLY_TRAFFIC_QUOTA,
+        native_unit_of_measurement=UnitOfInformation.TEBIBYTES,
+        device_class=SensorDeviceClass.DATA_SIZE,
+        icon="mdi:upload-network-outline",
+    ),
+    SeedboxSensorEntityDescription(
+        key="monthly_traffic_used_percent",
+        translation_key="monthly_traffic_used_percent",
+        data_key=NAME_MONTHLY_TRAFFIC_USED_PCT,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:gauge",
     ),
     SeedboxSensorEntityDescription(
         key="disk_size",

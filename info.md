@@ -15,10 +15,13 @@ This custom component integrates [Seedboxes.cc](https://seedboxes.cc/) with Home
 Some examples of the type of information provided:
 
 - disk quota and usage;
-- monthly traffic;
+- monthly traffic used, maximum quota, and quota usage percentage;
 - server IP address;
 - next payment date and price;
 - seedbox status.
+
+Unlimited plans continue to report current monthly traffic. Their maximum quota
+and usage percentage are unknown because no finite traffic limit applies.
 
 **This component will set up the following platforms.**
 

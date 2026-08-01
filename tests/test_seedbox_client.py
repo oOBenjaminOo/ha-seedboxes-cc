@@ -22,6 +22,8 @@ SENSOR_NAMES = (
     "NAME_DISK_SIZE",
     "NAME_IP_ADDRESS",
     "NAME_MONTHLY_TRAFFIC",
+    "NAME_MONTHLY_TRAFFIC_QUOTA",
+    "NAME_MONTHLY_TRAFFIC_USED_PCT",
     "NAME_NEXT_DUE",
     "NAME_PRICE",
     "NAME_STATUS",
@@ -119,6 +121,20 @@ class FakeSession:
 
     def get(self, url: str, **kwargs):
         self.requests.append(("GET", url, kwargs))
+        if url.endswith("/api/telemetry/stream-all") and (
+            not self.responses or str(self.responses[0].url) != url
+        ):
+            return FakeResponse(
+                200,
+                url=url,
+                lines=[
+                    (
+                        b'data: {"seedboxId":"80414","status":"Active",'
+                        b'"data":{"type":"diskspace","metric":"used",'
+                        b'"value":100000000000}}\n'
+                    )
+                ],
+            )
         return self.responses.pop(0)
 
     def request(self, method: str, url: str, **kwargs):
@@ -131,7 +147,9 @@ def dashboard_html(seedbox_id: str = "80414") -> str:
     return (
         rf"\"seedboxId\":\"{seedbox_id}\""
         r"\"diskSpaceLimit\":1000"
-        r"\"currentMonthTraffic\":2048"
+        r"\"packageModule\":\"legacy\""
+        r"\"monthlyTrafficQuota\":4"
+        r"\"currentMonthTraffic\":1048576"
         r"\"diskspace\":100000,\"traffic\":1"
         r"\"children\":\"Server IP\"x\"children\":\"10.0.0.1\""
         r"\"children\":\"Next Due\"x\"children\":\"April 2, 2030\""
@@ -155,6 +173,71 @@ def test_billing_parsers_accept_dashboard_and_api_formats(client_module):
         )
         == 88.50
     )
+
+
+@pytest.mark.asyncio
+async def test_cookie_refresh_prefers_live_telemetry(client_module):
+    """Scheduled refreshes use the live stream instead of stale page metrics."""
+    session = FakeSession(
+        FakeResponse(200, text=dashboard_html()),
+        FakeResponse(
+            200,
+            url="https://www.seedboxes.cc/api/telemetry/stream-all",
+            lines=[
+                (
+                    b'data: {"seedboxId":"80414","status":"Updating",'
+                    b'"data":{"type":"diskspace","metric":"used",'
+                    b'"value":250000000000}}\n'
+                )
+            ],
+        ),
+    )
+    client = client_module.SessionCookieSeedboxClient(session, "80414", "saved-cookie")
+
+    result = await client.async_get_data()
+
+    assert result["data"]["NAME_DISK_QUOTA_USED"] == 250.0
+    assert result["data"]["NAME_DISK_QUOTA_FREE"] == 750.0
+    assert result["data"]["NAME_DISK_QUOTA_USED_PCT"] == 25.0
+    assert result["data"]["NAME_MONTHLY_TRAFFIC"] == 1024.0
+    assert result["data"]["NAME_MONTHLY_TRAFFIC_QUOTA"] == 4.0
+    assert result["data"]["NAME_MONTHLY_TRAFFIC_USED_PCT"] == 25.0
+    assert result["data"]["NAME_STATUS"] == "Updating"
+
+
+@pytest.mark.asyncio
+async def test_unlimited_traffic_has_no_artificial_quota(client_module):
+    """Unlimited packages keep usage but expose no false maximum or percent."""
+    html = dashboard_html().replace(
+        r"\"packageModule\":\"legacy\"",
+        r"\"packageModule\":\"docker\"",
+    )
+    session = FakeSession(FakeResponse(200, text=html))
+    client = client_module.SessionCookieSeedboxClient(session, "80414", "saved-cookie")
+
+    result = await client.async_get_data()
+
+    assert result["data"]["NAME_MONTHLY_TRAFFIC"] == 1024.0
+    assert result["data"]["NAME_MONTHLY_TRAFFIC_QUOTA"] is None
+    assert result["data"]["NAME_MONTHLY_TRAFFIC_USED_PCT"] is None
+
+
+@pytest.mark.asyncio
+async def test_cookie_refresh_falls_back_to_dashboard_metrics(client_module):
+    """A temporary telemetry failure does not make all sensors unavailable."""
+    session = FakeSession(
+        FakeResponse(200, text=dashboard_html()),
+        FakeResponse(
+            503,
+            url="https://www.seedboxes.cc/api/telemetry/stream-all",
+        ),
+    )
+    client = client_module.SessionCookieSeedboxClient(session, "80414", "saved-cookie")
+
+    result = await client.async_get_data()
+
+    assert result["data"]["NAME_DISK_QUOTA_USED"] == 100.0
+    assert result["data"]["NAME_STATUS"] == "Active"
 
 
 @pytest.mark.asyncio
@@ -253,6 +336,8 @@ async def test_rotated_cookie_is_adopted_after_valid_data(client_module):
     await client.async_get_data()
 
     assert client.session_cookie == "rotated-cookie"
+    telemetry_request = session.requests[-1]
+    assert telemetry_request[2]["headers"]["Cookie"] == "session_id=rotated-cookie"
 
 
 @pytest.mark.asyncio

@@ -85,7 +85,13 @@
         "name": "Occupation du disque"
       },
       "monthly_traffic": {
-        "name": "Quota de trafic mensuel"
+        "name": "Trafic mensuel utilisé"
+      },
+      "monthly_traffic_quota": {
+        "name": "Quota maximal de trafic mensuel"
+      },
+      "monthly_traffic_used_percent": {
+        "name": "Utilisation du trafic mensuel"
       },
       "disk_size": {
         "name": "Capacité du disque"

@@ -22,9 +22,13 @@ The integration provides sensors for:
 - status;
 - free and used disk space;
 - disk usage percentage and capacity;
-- monthly traffic allowance;
+- monthly traffic used, maximum monthly traffic quota, and quota usage percentage;
 - server IP address;
 - next payment date and price.
+
+For unlimited plans, the current monthly traffic remains available. The maximum
+quota and usage percentage have an unknown state because there is no finite
+limit from which a percentage can be calculated.
 
 ## Installation
 
