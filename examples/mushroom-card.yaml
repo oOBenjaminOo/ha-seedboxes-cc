@@ -1,0 +1,72 @@
+# Seedboxes.cc Mushroom dashboard card
+#
+# Requirements:
+# - Mushroom cards installed from HACS
+# - replace every occurrence of "votre_id" with the seedbox ID used in your
+#   Home Assistant entity IDs
+# - if an entity was renamed or includes an area prefix, replace the complete
+#   entity ID with the one shown in Developer Tools > States
+
+type: vertical-stack
+cards:
+  - type: custom:mushroom-title-card
+    title: Seedbox VOTRE_ID
+    subtitle: >-
+      Statut : {{ states('sensor.seedboxes_cc_votre_id_statut') }} - IP : {{ states('sensor.seedboxes_cc_votre_id_adresse_ip') }}
+
+  - type: custom:mushroom-template-card
+    entity: sensor.seedboxes_cc_votre_id_occupation_du_disque
+    primary: Stockage
+    secondary: >-
+      {{ states('sensor.seedboxes_cc_votre_id_espace_disque_utilise') }} GB utilisés sur {{ states('sensor.seedboxes_cc_votre_id_capacite_du_disque') }} GB - {{ states('sensor.seedboxes_cc_votre_id_occupation_du_disque') }} %
+    icon: mdi:harddisk
+    icon_color: >-
+      {% set used = states('sensor.seedboxes_cc_votre_id_occupation_du_disque') | float(0) %}
+      {% if used >= 90 %}
+        red
+      {% elif used >= 75 %}
+        orange
+      {% else %}
+        green
+      {% endif %}
+    multiline_secondary: true
+    fill_container: true
+    tap_action:
+      action: more-info
+
+  - type: gauge
+    entity: sensor.seedboxes_cc_votre_id_occupation_du_disque
+    name: Occupation du disque
+    min: 0
+    max: 100
+    needle: true
+    severity:
+      green: 0
+      yellow: 75
+      red: 90
+
+  - type: sensor
+    entity: sensor.seedboxes_cc_votre_id_quota_de_trafic_mensuel
+    name: Trafic mensuel utilisé - 3 jours
+    graph: line
+    hours_to_show: 72
+    detail: 2
+
+  - type: custom:mushroom-template-card
+    entity: sensor.seedboxes_cc_votre_id_prochaine_echeance
+    primary: Facturation
+    secondary: >-
+      {% set due = states('sensor.seedboxes_cc_votre_id_prochaine_echeance') %}
+      {% set price = states('sensor.seedboxes_cc_votre_id_prix') | replace('.', ',') %}
+      {% set months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'] %}
+      {% if due not in ['unknown', 'unavailable', 'none', ''] %}
+        {% set parts = due.split('-') %}
+        {{ parts[2] | int }} {{ months[(parts[1] | int) - 1] }} {{ parts[0] }} - {{ price }} €
+      {% else %}
+        Date indisponible - {{ price }} €
+      {% endif %}
+    icon: mdi:calendar-clock
+    icon_color: purple
+    fill_container: true
+    tap_action:
+      action: more-info
