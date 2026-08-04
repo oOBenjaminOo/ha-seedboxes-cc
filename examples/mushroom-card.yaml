@@ -9,10 +9,23 @@
 
 type: vertical-stack
 cards:
-  - type: custom:mushroom-title-card
-    title: Seedbox VOTRE_ID
-    subtitle: >-
+  - type: custom:mushroom-template-card
+    entity: sensor.seedboxes_cc_votre_id_statut
+    primary: Seedbox VOTRE_ID
+    secondary: >-
       Statut : {{ states('sensor.seedboxes_cc_votre_id_statut') }} - IP : {{ states('sensor.seedboxes_cc_votre_id_adresse_ip') }}
+    icon: mdi:server-network
+    icon_color: >-
+      {% if is_state('sensor.seedboxes_cc_votre_id_statut', 'Active') %}
+        green
+      {% elif is_state('sensor.seedboxes_cc_votre_id_statut', 'Updating') %}
+        orange
+      {% else %}
+        red
+      {% endif %}
+    fill_container: true
+    tap_action:
+      action: more-info
 
   - type: custom:mushroom-template-card
     entity: sensor.seedboxes_cc_votre_id_occupation_du_disque
