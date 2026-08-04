@@ -166,6 +166,32 @@ reauthentication, automatic renewal was blocked or rejected: sign in again
 through the browser and repeat the steps above to provide a new `session_id`
 value.
 
+## Optional Mushroom dashboard card
+
+A ready-to-use Lovelace example is available in
+[`examples/mushroom-card.yaml`](examples/mushroom-card.yaml). It displays the
+seedbox status and IP address, disk usage, a disk gauge, three days of traffic
+history, and a combined billing card with a readable French date.
+
+The example requires
+[Mushroom cards](https://github.com/piitaya/lovelace-mushroom), which can be
+installed from the HACS frontend section.
+
+To use it:
+
+1. Install Mushroom cards and refresh the Home Assistant frontend.
+2. Open the dashboard editor and add a **Manual** card.
+3. Copy the contents of `examples/mushroom-card.yaml` into the YAML editor.
+4. Replace every `votre_id` placeholder with the seedbox ID used in your Home
+   Assistant entity IDs.
+5. If an entity was renamed or includes an area prefix, replace its complete
+   entity ID with the value shown in **Developer Tools > States**.
+6. Save the card.
+
+The example contains no real seedbox ID, IP address, username, password, or
+session cookie. It is dashboard configuration only, so updates to this example
+do not require a new integration release.
+
 ## Updating
 
 Install the update from **Settings → Updates**, or open HACS and select
@@ -264,6 +290,32 @@ Les entrées créées par une ancienne version avec uniquement un cookie navigat
 deviennent hybrides lors de la prochaine réauthentification, lorsque Home
 Assistant recueille les identifiants du compte. D’ici là, ces anciennes entrées
 demandent encore un cookie manuel à l’expiration de leur session.
+
+### Carte Mushroom facultative
+
+Un exemple Lovelace prêt à adapter est fourni dans
+[`examples/mushroom-card.yaml`](examples/mushroom-card.yaml). Il affiche le
+statut et l’adresse IP, le stockage, une jauge d’occupation, l’historique du
+trafic sur trois jours et une tuile de facturation avec la date écrite en
+français.
+
+Cette carte nécessite
+[Mushroom](https://github.com/piitaya/lovelace-mushroom), à installer depuis la
+section frontend de HACS.
+
+1. Installez Mushroom, puis actualisez l’interface Home Assistant.
+2. Modifiez votre tableau de bord et ajoutez une carte **Manuel**.
+3. Copiez le contenu du fichier `examples/mushroom-card.yaml` dans l’éditeur
+   YAML.
+4. Remplacez chaque occurrence de `votre_id` par l’identifiant utilisé dans les
+   identifiants d’entité de votre seedbox.
+5. Si une entité a été renommée ou contient le préfixe d’une zone, recopiez son
+   identifiant complet depuis **Outils de développement > États**.
+6. Enregistrez la carte.
+
+L’exemple est anonymisé : il ne contient aucun véritable identifiant de seedbox,
+adresse IP, identifiant de compte, mot de passe ou cookie de session. Une mise à
+jour de cet exemple ne nécessite pas de nouvelle release de l’intégration.
 
 ### Récupérer l’identifiant de la seedbox (repli manuel uniquement)
 
