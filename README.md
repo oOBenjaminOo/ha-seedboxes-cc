@@ -15,6 +15,10 @@ from the current [Seedboxes.cc](https://www.seedboxes.cc/) dashboard.
 > [!IMPORTANT]
 > Home Assistant 2026.7.0 or newer is required.
 
+## Version 2.0.2
+
+- Add the Seedboxes.cc brand icon in 256×256 and 512×512 formats inside the integration for Home Assistant and HACS. The icons reuse the emblem from the existing repository logo.
+
 ## Entities
 
 The integration provides sensors for:
