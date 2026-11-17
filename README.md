@@ -3,7 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/oOBenjaminOo/ha-seedboxes-cc?include_prereleases&style=for-the-badge)](https://github.com/oOBenjaminOo/ha-seedboxes-cc/releases)
 [![GitHub Activity](https://img.shields.io/github/commit-activity/y/oOBenjaminOo/ha-seedboxes-cc.svg?style=for-the-badge)](https://github.com/oOBenjaminOo/ha-seedboxes-cc/commits/main)
 [![License](https://img.shields.io/github/license/oOBenjaminOo/ha-seedboxes-cc.svg?style=for-the-badge)](LICENSE)
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://www.hacs.xyz/docs/faq/custom_repositories/)
+[![HACS Default](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/default/pull/13034)
 
 ![Seedboxes.cc logo](https://raw.githubusercontent.com/oOBenjaminOo/ha-seedboxes-cc/main/seedbox_logo.png)
 
@@ -32,9 +32,15 @@ The integration provides sensors for:
 
 ## Installation
 
-### HACS — recommended
+### HACS (recommended)
 
-This fork currently needs to be added as a custom HACS repository.
+1. Open **HACS** in Home Assistant and search for **Seedboxes.cc**.
+2. Open the integration and select **Download**.
+3. Restart Home Assistant and follow the [configuration steps](#configuration).
+
+#### Custom repository fallback
+
+If **Seedboxes.cc** does not appear in HACS, add the repository manually.
 
 1. Open **HACS** in Home Assistant.
 2. Open the three-dot menu and select **Custom repositories**.
@@ -238,6 +244,16 @@ cookies, usernames, or passwords. Review any log before sharing it publicly.
 ## Guide en français
 
 ### Installation avec HACS
+
+1. Ouvrez **HACS** dans Home Assistant et recherchez **Seedboxes.cc**.
+2. Ouvrez l’intégration et cliquez sur **Télécharger**.
+3. Redémarrez Home Assistant.
+4. Ouvrez **Paramètres → Appareils et services → Ajouter une intégration**,
+   puis recherchez **Seedboxes.cc**.
+
+#### Dépôt personnalisé en solution de secours
+
+Si **Seedboxes.cc** ne s’affiche pas dans HACS, ajoutez le dépôt manuellement.
 
 1. Ouvrez **HACS** dans Home Assistant.
 2. Dans le menu à trois points, choisissez **Dépôts personnalisés**.
